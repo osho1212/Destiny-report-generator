@@ -1,0 +1,20 @@
+# Backend
+backend/__pycache__/
+backend/*.py[cod]
+backend/venv/
+backend/env/
+backend/generated_reports/*.pdf
+backend/generated_reports/*.docx
+backend/generated_reports/*.xlsx
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+
+# General
+.DS_Store
+.vscode/
+.idea/
+*.log
+.env

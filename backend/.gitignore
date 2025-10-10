@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+generated_reports/*.pdf
+generated_reports/*.docx
+generated_reports/*.xlsx
+!generated_reports/.gitkeep
+.env
+.vscode/
+.idea/
+*.log
