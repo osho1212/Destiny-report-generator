@@ -1,6 +1,7 @@
 .report-form {
   max-width: 900px;
   margin: 0 auto;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .form-section {
@@ -8,15 +9,15 @@
   padding: 25px;
   border-radius: 12px;
   margin-bottom: 30px;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #ff8c00;
 }
 
 .form-section h2 {
-  color: #667eea;
+  color: #ff8c00;
   font-size: 20px;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid #ff8c00;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -45,17 +46,17 @@
   padding: 20px;
   background: white;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #ff8c00;
 }
 
 .dasha-label {
   display: block;
   font-weight: 700;
-  color: #667eea;
+  color: #ff8c00;
   font-size: 16px;
   margin-bottom: 15px;
   padding-bottom: 8px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #ff8c00;
 }
 
 .dasha-fields {
@@ -80,7 +81,7 @@
 .dasha-field select {
   width: 100%;
   padding: 10px 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #ff8c00;
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
@@ -90,15 +91,15 @@
 .dasha-field input:focus,
 .dasha-field select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
 }
 
 /* Period Date Range Styling */
 .period-group {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 2px solid #ff8c00;
 }
 
 .period-label {
@@ -130,7 +131,7 @@
 .period-field input[type="date"] {
   width: 100%;
   padding: 10px 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #ff8c00;
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
@@ -139,8 +140,8 @@
 
 .period-field input[type="date"]:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
 }
 
 .form-group input,
@@ -148,7 +149,7 @@
 .form-group select {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #ff8c00;
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
@@ -159,8 +160,8 @@
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
 }
 
 .form-group textarea {
@@ -176,7 +177,7 @@
 
 .help-text {
   display: block;
-  color: #667eea;
+  color: #ff8c00;
   font-size: 12px;
   margin-top: 6px;
   font-style: italic;
@@ -204,7 +205,7 @@
 .submit-btn {
   width: 100%;
   padding: 16px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -218,7 +219,7 @@
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
 }
 
 .submit-btn:active:not(:disabled) {
@@ -228,6 +229,94 @@
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Dark Theme Styles */
+.report-form.dark-theme {
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.dark-theme .form-section {
+  background: #16213e;
+  border-color: #ff8c00;
+}
+
+.dark-theme .form-section h2 {
+  color: #ff8c00;
+  border-bottom-color: #ff8c00;
+}
+
+.dark-theme .dasha-group {
+  background: #0f3460;
+  border-color: #ff8c00;
+}
+
+.dark-theme .dasha-label {
+  color: #ff8c00;
+  border-bottom-color: #ff8c00;
+}
+
+.dark-theme .form-group label,
+.dark-theme .dasha-field label,
+.dark-theme .period-label,
+.dark-theme .period-field label {
+  color: #b0b0b0;
+}
+
+.dark-theme .form-group input,
+.dark-theme .form-group textarea,
+.dark-theme .form-group select,
+.dark-theme .dasha-field input,
+.dark-theme .dasha-field select,
+.dark-theme .period-field input {
+  background: #0f3460;
+  border-color: #ff8c00;
+  color: #e0e0e0;
+}
+
+.dark-theme .form-group input:focus,
+.dark-theme .form-group textarea:focus,
+.dark-theme .form-group select:focus,
+.dark-theme .dasha-field input:focus,
+.dark-theme .dasha-field select:focus,
+.dark-theme .period-field input:focus {
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.3);
+}
+
+.dark-theme .form-group input::placeholder,
+.dark-theme .form-group textarea::placeholder,
+.dark-theme .dasha-field input::placeholder {
+  color: #6a6a6a;
+}
+
+.dark-theme .help-text {
+  color: #ff8c00;
+}
+
+.dark-theme .error {
+  color: #ff6b6b;
+}
+
+.dark-theme .message.success {
+  background-color: #1e4d2b;
+  color: #7bed9f;
+  border-color: #2ed573;
+}
+
+.dark-theme .message.error {
+  background-color: #4a1a1a;
+  color: #ff6b6b;
+  border-color: #c92a2a;
+}
+
+.dark-theme .submit-btn {
+  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+}
+
+.dark-theme .submit-btn:hover:not(:disabled) {
+  box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
 }
 
 @media (max-width: 768px) {

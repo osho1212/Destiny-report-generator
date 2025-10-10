@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import apiService from '../services/apiService';
 import ReportPreview from './ReportPreview';
+import ShinyText from './ShinyText';
 import './ReportForm.css';
 
 // Planet donation information - moved outside component to avoid re-creation
@@ -53,7 +54,96 @@ const planetDonationInfo = {
     }
   };
 
-function ReportForm() {
+// Gemstone information for each planet
+const planetGemstoneInfo = {
+  'Sun': {
+    english: 'Ruby',
+    hindi: 'माणिक्य (Maanikya)',
+    hindiPlanet: 'सूर्य (Surya)'
+  },
+  'Moon': {
+    english: 'Pearl',
+    hindi: 'मोती (Moti)',
+    hindiPlanet: 'चंद्र (Chandra)'
+  },
+  'Mars': {
+    english: 'Red Coral',
+    hindi: 'मूंगा (Moonga)',
+    hindiPlanet: 'मंगल (Mangal)'
+  },
+  'Mercury': {
+    english: 'Emerald',
+    hindi: 'पन्ना (Panna)',
+    hindiPlanet: 'बुध (Budh)'
+  },
+  'Jupiter': {
+    english: 'Yellow Sapphire',
+    hindi: 'पुखराज (Pukhraj)',
+    hindiPlanet: 'बृहस्पति / गुरु (Brihaspati / Guru)'
+  },
+  'Venus': {
+    english: 'Diamond',
+    hindi: 'हीरा (Heera)',
+    hindiPlanet: 'शुक्र (Shukra)'
+  },
+  'Saturn': {
+    english: 'Blue Sapphire',
+    hindi: 'नीलम (Neelam)',
+    hindiPlanet: 'शनि (Shani)'
+  },
+  'Rahu': {
+    english: 'Hessonite (Gomed)',
+    hindi: 'गोमेद (Gomed)',
+    hindiPlanet: 'राहु (Rahu)'
+  },
+  'Ketu': {
+    english: "Cat's Eye",
+    hindi: 'लहसुनिया (Lahsunia)',
+    hindiPlanet: 'केतु (Ketu)'
+  }
+};
+
+// Mantra information for each planet
+const planetMantraInfo = {
+  'Sun': {
+    deity: 'Lord Surya',
+    mantra: 'Om Hram Hreem Hroum Sah Suryaya Namah'
+  },
+  'Moon': {
+    deity: 'Lord Shiva',
+    mantra: 'Om Shram Shreem Shroum Sah Chandraya Namah'
+  },
+  'Mars': {
+    deity: 'Lord Hanuman (or Kartikeya)',
+    mantra: 'Om Kram Kreem Kroum Sah Bhaumaya Namah'
+  },
+  'Mercury': {
+    deity: 'Lord Vishnu',
+    mantra: 'Om Bram Breem Broum Sah Budhaya Namah'
+  },
+  'Jupiter': {
+    deity: 'Lord Brihaspati or Lord Dakshinamurthy',
+    mantra: 'Om Gram Greem Groum Sah Gurave Namah'
+  },
+  'Venus': {
+    deity: 'Goddess Lakshmi',
+    mantra: 'Om Dram Dreem Droum Sah Shukraya Namah'
+  },
+  'Saturn': {
+    deity: 'Lord Shani Dev (or Lord Hanuman)',
+    mantra: 'Om Pram Preem Proum Sah Shanaye Namah'
+  },
+  'Rahu': {
+    deity: 'Goddess Durga / Lord Bhairava',
+    mantra: 'Om Bhram Bhreem Bhroum Sah Rahave Namah'
+  },
+  'Ketu': {
+    deity: 'Lord Ganesha',
+    mantra: 'Om Stram Streem Stroum Sah Ketave Namah'
+  }
+};
+
+function ReportForm({ darkTheme }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -148,6 +238,38 @@ function ReportForm() {
       pratyantardashaPlanet, pratyantardashaNL, pratyantardashaSL,
       setValue]);
 
+  // Watch gemstone planet selection
+  const gemstonePlanet = watch('gemstone_planet');
+
+  // Auto-suggest gemstone based on selected planet
+  React.useEffect(() => {
+    if (gemstonePlanet) {
+      const info = planetGemstoneInfo[gemstonePlanet];
+      if (info) {
+        const gemstoneText = `${gemstonePlanet} - ${info.english} (${info.hindi})`;
+        setValue('gemstones', gemstoneText);
+      }
+    } else {
+      setValue('gemstones', '');
+    }
+  }, [gemstonePlanet, setValue]);
+
+  // Watch mantra planet selection
+  const mantraPlanet = watch('mantra_planet');
+
+  // Auto-suggest mantra based on selected planet
+  React.useEffect(() => {
+    if (mantraPlanet) {
+      const info = planetMantraInfo[mantraPlanet];
+      if (info) {
+        const mantraText = `${mantraPlanet} - ${info.deity}: ${info.mantra}`;
+        setValue('mantra', mantraText);
+      }
+    } else {
+      setValue('mantra', '');
+    }
+  }, [mantraPlanet, setValue]);
+
   const onPreview = (data) => {
     setPreviewData(data);
     setShowPreview(true);
@@ -182,7 +304,7 @@ function ReportForm() {
   };
 
   return (
-    <div className="report-form">
+    <div className={`report-form ${darkTheme ? 'dark-theme' : ''}`}>
       <form onSubmit={handleSubmit(onPreview)}>
         {/* ABOUT THE CLIENT */}
         <div className="form-section">
@@ -514,23 +636,59 @@ function ReportForm() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="gemstones">Gemstones</label>
+            <label htmlFor="gemstone_planet">Gemstones - Select Planet</label>
+            <select id="gemstone_planet" {...register('gemstone_planet')}>
+              <option value="">Select Planet</option>
+              <option value="Sun">Sun</option>
+              <option value="Moon">Moon</option>
+              <option value="Mars">Mars</option>
+              <option value="Mercury">Mercury</option>
+              <option value="Jupiter">Jupiter</option>
+              <option value="Venus">Venus</option>
+              <option value="Saturn">Saturn</option>
+              <option value="Rahu">Rahu</option>
+              <option value="Ketu">Ketu</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gemstones">Recommended Gemstone</label>
             <input
               id="gemstones"
               type="text"
               {...register('gemstones')}
-              placeholder="Recommended gemstones"
+              placeholder="Select a planet above to see gemstone"
+              readOnly
             />
+            <span className="help-text">💎 Auto-filled when you select a planet above</span>
           </div>
 
           <div className="form-group">
-            <label htmlFor="mantra">Mantra to Make Situation Positive</label>
-            <input
+            <label htmlFor="mantra_planet">Mantra to Make Situation Positive - Select Planet</label>
+            <select id="mantra_planet" {...register('mantra_planet')}>
+              <option value="">Select Planet</option>
+              <option value="Sun">Sun</option>
+              <option value="Moon">Moon</option>
+              <option value="Mars">Mars</option>
+              <option value="Mercury">Mercury</option>
+              <option value="Jupiter">Jupiter</option>
+              <option value="Venus">Venus</option>
+              <option value="Saturn">Saturn</option>
+              <option value="Rahu">Rahu</option>
+              <option value="Ketu">Ketu</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="mantra">Recommended Mantra</label>
+            <textarea
               id="mantra"
-              type="text"
               {...register('mantra')}
-              placeholder="Positive mantra"
+              placeholder="Select a planet above to see deity and mantra"
+              rows="3"
+              readOnly
             />
+            <span className="help-text">🕉️ Auto-filled with deity and mantra when you select a planet above</span>
           </div>
 
           <div className="form-group">
@@ -752,7 +910,11 @@ function ReportForm() {
         )}
 
         <button type="submit" disabled={loading} className="submit-btn">
-          {loading ? 'Generating Destiny Report...' : 'Preview & Generate Report'}
+          {loading ? (
+            'Generating Destiny Report...'
+          ) : (
+            <ShinyText text="Preview & Generate Report" disabled={false} speed={3} />
+          )}
         </button>
       </form>
 

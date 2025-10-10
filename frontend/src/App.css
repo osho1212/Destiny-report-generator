@@ -1,23 +1,40 @@
 .App {
   max-width: 1200px;
   margin: 0 auto;
+  transition: all 0.3s ease;
 }
 
-.App-header {
-  text-align: center;
-  color: white;
+/* Hero Section */
+.hero-section {
   margin-bottom: 40px;
+  padding: 0 20px;
 }
 
-.App-header h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+.hero-container {
+  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 40%, #4169e1 100%);
+  padding: 60px 40px;
+  border-radius: 30px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(255, 140, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
-.App-header p {
-  font-size: 1.2rem;
-  opacity: 0.9;
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 15px 0;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  color: white;
+  margin: 0;
+  opacity: 0.95;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+  font-weight: 400;
 }
 
 .App-main {
@@ -25,14 +42,87 @@
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+  z-index: 1000;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+}
+
+/* Dark Theme Styles for App */
+body.dark-theme {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.App.dark-theme .hero-container {
+  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 40%, #4169e1 100%);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+}
+
+.App.dark-theme .App-main {
+  background: #0f3460;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.App.dark-theme .theme-toggle {
+  background: linear-gradient(135deg, #ffd32a 0%, #ffaa00 100%);
+  color: #1a1a2e;
+}
+
+.App.dark-theme .theme-toggle:hover {
+  box-shadow: 0 6px 16px rgba(255, 211, 42, 0.4);
 }
 
 @media (max-width: 768px) {
-  .App-header h1 {
-    font-size: 2rem;
+  .hero-section {
+    margin-bottom: 30px;
+    padding: 0 10px;
+  }
+
+  .hero-container {
+    padding: 40px 25px;
+    border-radius: 20px;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
   }
 
   .App-main {
     padding: 20px;
+  }
+
+  .theme-toggle {
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    font-size: 12px;
   }
 }

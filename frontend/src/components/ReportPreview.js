@@ -1,4 +1,5 @@
 import React from 'react';
+import ShinyText from './ShinyText';
 import './ReportPreview.css';
 
 function ReportPreview({ formData, onClose, onExport }) {
@@ -198,7 +199,7 @@ function ReportPreview({ formData, onClose, onExport }) {
             Edit Report
           </button>
           <button className="btn-primary" onClick={onExport}>
-            Export Report
+            <ShinyText text="Export Report" disabled={false} speed={3} />
           </button>
         </div>
       </div>
