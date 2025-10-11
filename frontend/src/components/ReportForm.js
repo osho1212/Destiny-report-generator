@@ -143,6 +143,91 @@ const planetMantraInfo = {
   }
 };
 
+// Nakshatra information with symbols
+const nakshatraInfo = {
+  'Ashvini': {
+    mobileDisplayPicture: `• Drum/Pair of fish
+• Coiled serpent/Female cat/Owl/Blue sparrow`,
+    beneficialSymbols: `• Drum/Pair of fish
+• Coiled serpent/Female cat/Owl/Blue sparrow`,
+    prosperitySymbols: `• Inverted triangle/ELEPHANT/CROW
+• Winnowing Basket/MALE MONKEY`,
+    mentalPhysicalWellbeing: `• Hand/fist/FEMALE BUFFALO/FALCON`,
+    accomplishments: `• Shoot of a plant/MALE BUFFALO
+• Tears/FEMALE DOG
+• Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
+    avoidSymbols: `• Bright jewel/pearl/FEMALE TIGER/WOODPECKER
+• POTTER'S WHEEL/MALE TIGER
+• SWORD/MALE LION/PIGEON
+• BOW AND ARROW/FEMALE CAT/SWAN
+• Deer's head/FEMALE SERPENT/HEN
+• A drum/flute/FEMALE LION/PEACOCK
+• Sharp knife/GOAT/PEACOCK
+• Elephants tusks/MALE MANGOOSE/STORK`
+  },
+  'Bharani': {
+    mobileDisplayPicture: `• Horse head/HORSE/EAGLE
+• ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
+    beneficialSymbols: `• Horse head/HORSE/EAGLE
+• ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
+    prosperitySymbols: `• SHARP KNIFE/GOAT/PEACOCK
+• ELEPHANT TUSK/MALE MANGOOSE/STORK`,
+    mentalPhysicalWellbeing: `• Bright jewel/pearl/FEMALE TIGER/WOODPECKER`,
+    accomplishments: `• Potter's wheel/MALE TIGER
+• SWORD/MALE LION/PIGEON
+• BOW AND ARROW/FEMALE CAT/SWAN`,
+    avoidSymbols: `• LOTUS/FEMALE DEER/NIGHTINGALE
+• Three foot prints/FEMALE MONKEY
+• Hand or Fist/FEMALE BUFFALO/FALCON
+• Chariot/SERPENT/WHITE OWL
+• Shoot of a plant/MALE BUFFALO
+• Tears/FEMALE DOG
+• Empty circles of ring/FEMALE HORSE/ASIAN KOEL
+• UDDER OF A COW/GOAT/SEA CROW
+• SERPENT IN WATER/FEMALE COW`
+  },
+  'Krittika': {
+    mobileDisplayPicture: `• Inverted triangle/ELEPHANT/crow`,
+    beneficialSymbols: `• Inverted triangle/ELEPHANT/crow`,
+    prosperitySymbols: `• Three foot prints/FEMALE MONKEY
+• CHARIOT/SERPENT/WHITE OWL`,
+    mentalPhysicalWellbeing: `• SHOOT OF A PLANT/MALE BUFFALO`,
+    accomplishments: `• Udder of a cow/GOAT/SEA CROW
+• SERPENT IN WATER/FEMALE COW
+• Lotus/FEMALE DEER/NIGHTINGALE`,
+    avoidSymbols: `• Bright jewel/pearl/FEMALE TIGER/WOODPECKER
+• COILED SERPENT/FEMALE CAT/OWL
+• Potter's wheel/MALE TIGER
+• Drum/pair of fish/FEMALE ELEPHANT
+• Circular amulet/umbrella/ear rings/MALE DEER
+• SWORD/MALE LION/PIGEON
+• BOW AND ARROW/FEMALE CAT/SWAN
+• Deer's head/FEMALE SERPENT/HEN
+• A drum/flute/FEMALE LION/PEACOCK`
+  },
+  'Rohini': {
+    mobileDisplayPicture: `• Sharp knife/GOAT/PEACOCK
+• MALE COW(NANDI)/PEACOCK`,
+    beneficialSymbols: `• Sharp knife/GOAT/PEACOCK
+• MALE COW(NANDI)/PEACOCK`,
+    prosperitySymbols: `• DEER'S HEAD/FEMALE SERPENT/HEN
+• Drum/FLUTE/FEMALE LION/PEACOCK`,
+    mentalPhysicalWellbeing: `• POTTER'S WHEEL/MALE TIGER`,
+    accomplishments: `• COILED SERPENT/FEMALE CAT/OWL
+• Drum/pair of fish/FEMALE ELEPHANT
+• Circular amulet/umbrella/ear rings/MALE DEER`,
+    avoidSymbols: `• SERPENT IN WATER/FEMALE COW
+• Lotus/FEMALE DEER/NIGHTINGALE
+• Shoot of a plant
+• Tears/FEMALE DOG
+• Empty circles of ring/FEMALE HORSE/ASIAN KOEL
+• Horse head/HORSE/EAGLE
+• RETICULATED ROOT/MALE DOG/RED VULTURE
+• ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
+• UDDER OF A COW/GOAT/SEA CROW`
+  }
+};
+
 function ReportForm({ darkTheme }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -269,6 +354,22 @@ function ReportForm({ darkTheme }) {
       setValue('mantra', '');
     }
   }, [mantraPlanet, setValue]);
+
+  // Watch nakshatra selection
+  const birthNakshatra = watch('birthNakshatra');
+
+  // Auto-fill nakshatra fields based on selected nakshatra
+  React.useEffect(() => {
+    if (birthNakshatra && nakshatraInfo[birthNakshatra]) {
+      const info = nakshatraInfo[birthNakshatra];
+      setValue('mobileDisplayPicture', info.mobileDisplayPicture);
+      setValue('beneficialSymbols', info.beneficialSymbols);
+      setValue('nakshatraProsperitySymbols', info.prosperitySymbols);
+      setValue('nakshatraMentalPhysicalWellbeing', info.mentalPhysicalWellbeing);
+      setValue('nakshatraAccomplishments', info.accomplishments);
+      setValue('nakshatraAvoidSymbols', info.avoidSymbols);
+    }
+  }, [birthNakshatra, setValue]);
 
   const onPreview = (data) => {
     setPreviewData(data);
@@ -697,28 +798,106 @@ function ReportForm({ darkTheme }) {
               id="birthNakshatra"
               type="text"
               {...register('birthNakshatra')}
-              placeholder="Birth nakshatra"
+              placeholder="Start typing nakshatra name..."
+              list="nakshatra-list"
             />
+            <datalist id="nakshatra-list">
+              <option value="Ashvini" />
+              <option value="Bharani" />
+              <option value="Krittika" />
+              <option value="Rohini" />
+              <option value="Mrigashira" />
+              <option value="Ardra" />
+              <option value="Punarvasu" />
+              <option value="Pushya" />
+              <option value="Ashlesha" />
+              <option value="Magha" />
+              <option value="Purva Phalguni" />
+              <option value="Uttara Phalguni" />
+              <option value="Hasta" />
+              <option value="Chitra" />
+              <option value="Swati" />
+              <option value="Vishakha" />
+              <option value="Anuradha" />
+              <option value="Jyeshtha" />
+              <option value="Mula" />
+              <option value="Purva Ashadha" />
+              <option value="Uttara Ashadha" />
+              <option value="Shravana" />
+              <option value="Dhanishta" />
+              <option value="Shatabhisha" />
+              <option value="Purva Bhadrapada" />
+              <option value="Uttara Bhadrapada" />
+              <option value="Revati" />
+              <option value="Abhijit" />
+            </datalist>
+            <span className="help-text">⭐ Select a nakshatra to auto-fill symbol fields below</span>
           </div>
 
           <div className="form-group">
             <label htmlFor="mobileDisplayPicture">Beneficial Mobile Display Picture</label>
-            <input
+            <textarea
               id="mobileDisplayPicture"
-              type="text"
               {...register('mobileDisplayPicture')}
-              placeholder="Suggested mobile wallpaper"
+              placeholder="Suggested mobile wallpaper symbols"
+              rows="3"
             />
+            <span className="help-text">📱 Auto-filled when nakshatra is selected</span>
           </div>
 
           <div className="form-group">
             <label htmlFor="beneficialSymbols">Most Beneficial Symbols</label>
-            <input
+            <textarea
               id="beneficialSymbols"
-              type="text"
               {...register('beneficialSymbols')}
               placeholder="Lucky symbols"
+              rows="3"
             />
+            <span className="help-text">✨ Auto-filled when nakshatra is selected</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="nakshatraProsperitySymbols">Prosperity Giving Symbols</label>
+            <textarea
+              id="nakshatraProsperitySymbols"
+              {...register('nakshatraProsperitySymbols')}
+              placeholder="Symbols for prosperity and wealth"
+              rows="3"
+            />
+            <span className="help-text">💰 Auto-filled when nakshatra is selected</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="nakshatraMentalPhysicalWellbeing">Mental/Physical Wellbeing Symbols</label>
+            <textarea
+              id="nakshatraMentalPhysicalWellbeing"
+              {...register('nakshatraMentalPhysicalWellbeing')}
+              placeholder="Symbols for health and wellbeing"
+              rows="3"
+            />
+            <span className="help-text">🧘 Auto-filled when nakshatra is selected</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="nakshatraAccomplishments">Accomplishment/Achievement Symbols</label>
+            <textarea
+              id="nakshatraAccomplishments"
+              {...register('nakshatraAccomplishments')}
+              placeholder="Symbols for success and achievements"
+              rows="3"
+            />
+            <span className="help-text">🏆 Auto-filled when nakshatra is selected</span>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="nakshatraAvoidSymbols">Symbols to Avoid</label>
+            <textarea
+              id="nakshatraAvoidSymbols"
+              {...register('nakshatraAvoidSymbols')}
+              placeholder="Symbols that should be avoided"
+              rows="5"
+            />
+            <span className="help-text">⚠️ Auto-filled when nakshatra is selected</span>
           </div>
         </div>
 

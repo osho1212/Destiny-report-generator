@@ -98,7 +98,11 @@ function ReportPreview({ formData, onClose, onExport }) {
         { key: 'mantra', label: 'Mantra to Make Situation Positive' },
         { key: 'birthNakshatra', label: 'Your Birth Nakshatra' },
         { key: 'mobileDisplayPicture', label: 'Beneficial Mobile Display Picture' },
-        { key: 'beneficialSymbols', label: 'Most Beneficial Symbols' }
+        { key: 'beneficialSymbols', label: 'Most Beneficial Symbols' },
+        { key: 'nakshatraProsperitySymbols', label: 'Prosperity Giving Symbols' },
+        { key: 'nakshatraMentalPhysicalWellbeing', label: 'Mental/Physical Wellbeing Symbols' },
+        { key: 'nakshatraAccomplishments', label: 'Accomplishment/Achievement Symbols' },
+        { key: 'nakshatraAvoidSymbols', label: 'Symbols to Avoid' }
       ],
       customFields: [
         { label: 'Mahadasha', getValue: () => formatDasha('mahadasha') },
