@@ -51,7 +51,7 @@
   top: 20px;
   right: 20px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
   border: none;
   border-radius: 25px;
@@ -59,13 +59,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
   z-index: 1000;
 }
 
 .theme-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 
 .theme-toggle:active {
@@ -88,12 +88,12 @@ body.dark-theme {
 }
 
 .App.dark-theme .theme-toggle {
-  background: linear-gradient(135deg, #ffd32a 0%, #ffaa00 100%);
+  background: linear-gradient(135deg, #60a5fa 0%, #93c5fd 100%);
   color: #1a1a2e;
 }
 
 .App.dark-theme .theme-toggle:hover {
-  box-shadow: 0 6px 16px rgba(255, 211, 42, 0.4);
+  box-shadow: 0 6px 16px rgba(96, 165, 250, 0.4);
 }
 
 @media (max-width: 768px) {

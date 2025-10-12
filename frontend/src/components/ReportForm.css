@@ -205,7 +205,7 @@
 .submit-btn {
   width: 100%;
   padding: 16px 32px;
-  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -219,7 +219,7 @@
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
 }
 
 .submit-btn:active:not(:disabled) {
@@ -312,11 +312,335 @@
 }
 
 .dark-theme .submit-btn {
-  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
 }
 
 .dark-theme .submit-btn:hover:not(:disabled) {
-  box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Aspect Input Styling */
+.aspect-container {
+  margin-bottom: 10px;
+}
+
+.aspect-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.aspect-select {
+  width: 110px;
+  flex-shrink: 1;
+  padding: 8px 10px;
+  border: 2px solid #ff8c00;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.aspect-select-small {
+  width: 80px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.aspect-select:focus {
+  outline: none;
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+.aspect-label {
+  color: #666;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.aspect-btn {
+  background: #1e40af;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.aspect-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
+}
+
+.aspect-btn:active {
+  transform: scale(0.95);
+}
+
+.aspect-btn-mini {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  background: #2563eb;
+}
+
+.aspect-btn-mini:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.aspect-btn-tiny {
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  background: #3b82f6;
+}
+
+.aspect-btn-tiny:hover {
+  background: #2563eb;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.aspect-btn-remove {
+  background: #e74c3c;
+}
+
+.aspect-btn-remove:hover {
+  background: #c0392b;
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.aspect-section-label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #ff8c00;
+  font-size: 15px;
+  border-bottom: 2px solid #ff8c00;
+  padding-bottom: 8px;
+}
+
+/* Aspects Modal Button */
+.aspects-modal-btn {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.4);
+}
+
+.aspects-modal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+/* Aspects Modal Overlay */
+.aspects-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.aspects-modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.aspects-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+
+.aspects-modal-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+}
+
+.aspects-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.aspects-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.aspects-modal-body {
+  padding: 30px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.aspects-modal-section {
+  margin-bottom: 40px;
+}
+
+.aspects-modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.aspects-modal-section h3 {
+  color: #667eea;
+  font-size: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.aspects-modal-footer {
+  padding: 20px 30px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  background: #f9f9f9;
+}
+
+.aspects-modal-done-btn {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  padding: 12px 40px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.aspects-modal-done-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Removal Items Styling */
+.removal-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.removal-label {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.removal-planet-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #f0f0f0;
+  color: #333;
+  cursor: not-allowed;
+}
+
+.removal-degree-input {
+  width: 70px;
+  padding: 10px 12px;
+  border: 2px solid #9b59b6;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #f0f0f0;
+  color: #333;
+  cursor: not-allowed;
+  text-align: center;
+}
+
+.removal-direction-select {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px 12px;
+  border: 2px solid #ff8c00;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.removal-direction-select:focus {
+  outline: none;
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+/* Dark Theme for Aspects */
+.dark-theme .aspect-select {
+  background: #16213e;
+  border-color: #ff8c00;
+  color: #e0e0e0;
+}
+
+.dark-theme .aspect-select:focus {
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.3);
+}
+
+.dark-theme .aspect-label {
+  color: #b0b0b0;
+}
+
+.dark-theme .aspect-section-label {
+  color: #ff8c00;
+  border-bottom-color: #ff8c00;
 }
 
 @media (max-width: 768px) {
@@ -341,5 +665,24 @@
   .form-group textarea,
   .form-group select {
     font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .aspect-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .aspect-select {
+    width: 100%;
+  }
+
+  .aspect-label {
+    text-align: center;
+    width: 100%;
+  }
+
+  .aspect-btn {
+    width: 100%;
+    border-radius: 6px;
   }
 }

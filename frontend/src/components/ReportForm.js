@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import apiService from '../services/apiService';
 import ReportPreview from './ReportPreview';
@@ -703,6 +703,12 @@ function ReportForm({ darkTheme }) {
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [planetSources, setPlanetSources] = useState({}); // Store planet -> source mapping
+  const [aspectsOnHouses, setAspectsOnHouses] = useState([{ planet: '', aspects: [{ houses: [''], degree: '' }] }]);
+  const [aspectsOnPlanets, setAspectsOnPlanets] = useState([{ planet: '', aspects: [{ planets: [''], degree: '' }] }]);
+  const [showAspectsModal, setShowAspectsModal] = useState(false);
+  const [removalItems, setRemovalItems] = useState([{ planet: '', directions: [''] }]);
+  const [placementItems, setPlacementItems] = useState([{ planet: '', direction: '' }]);
+  const [colorObjectSuggestions, setColorObjectSuggestions] = useState('');
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
 
   // Watch all dasha source fields for auto-suggestion
@@ -945,9 +951,413 @@ function ReportForm({ darkTheme }) {
     }
   }, [pratyantardashaSL, planetSources, pratyantardashaSLSource, setValue]);
 
+  // Auto-populate removal and placement items based on aspects
+  useEffect(() => {
+    const planetDegreeMap = new Map(); // Map to store planet with their non-120° degrees
+    const planetAllDegrees = new Map(); // Map to store all degrees for determining duplicates
+
+    // Collect planets with their degrees from aspects on houses
+    aspectsOnHouses.forEach(aspect => {
+      if (aspect.planet) {
+        const degrees = aspect.aspects
+          .filter(a => a.degree)
+          .map(a => a.degree);
+
+        if (degrees.length > 0) {
+          if (!planetDegreeMap.has(aspect.planet)) {
+            planetDegreeMap.set(aspect.planet, new Set());
+          }
+          if (!planetAllDegrees.has(aspect.planet)) {
+            planetAllDegrees.set(aspect.planet, new Set());
+          }
+          degrees.forEach(deg => {
+            planetAllDegrees.get(aspect.planet).add(deg);
+            // Only add to removal map if not 120°
+            if (deg !== '120°') {
+              planetDegreeMap.get(aspect.planet).add(deg);
+            }
+          });
+        }
+      }
+    });
+
+    // Collect planets with their degrees from aspects on planets
+    aspectsOnPlanets.forEach(aspect => {
+      if (aspect.planet) {
+        const degrees = aspect.aspects
+          .filter(a => a.degree)
+          .map(a => a.degree);
+
+        if (degrees.length > 0) {
+          if (!planetDegreeMap.has(aspect.planet)) {
+            planetDegreeMap.set(aspect.planet, new Set());
+          }
+          if (!planetAllDegrees.has(aspect.planet)) {
+            planetAllDegrees.set(aspect.planet, new Set());
+          }
+          degrees.forEach(deg => {
+            planetAllDegrees.get(aspect.planet).add(deg);
+            // Only add to removal map if not 120°
+            if (deg !== '120°') {
+              planetDegreeMap.get(aspect.planet).add(deg);
+            }
+          });
+        }
+      }
+    });
+
+    // Create removal items - one entry per planet with array of directions for each non-120° degree
+    const newRemovalItems = [];
+    planetDegreeMap.forEach((degrees, planet) => {
+      const degreeCount = degrees.size;
+      if (degreeCount > 0) {
+        const existing = removalItems.find(item => item.planet === planet);
+
+        // Create array of directions - one per degree
+        const directions = [];
+        for (let i = 0; i < degreeCount; i++) {
+          directions.push(existing && existing.directions[i] ? existing.directions[i] : '');
+        }
+
+        newRemovalItems.push({
+          planet: planet,
+          directions: directions
+        });
+      }
+    });
+
+    // Create placement items for each unique planet (one per planet)
+    // Include all planets regardless of degrees
+    const newPlacementItems = [];
+    planetAllDegrees.forEach((degrees, planet) => {
+      const existing = placementItems.find(item => item.planet === planet);
+      newPlacementItems.push({
+        planet: planet,
+        direction: existing ? existing.direction : ''
+      });
+    });
+
+    // Only update if the structure has changed
+    const currentRemovalKey = removalItems.map(item => `${item.planet}-${item.directions.length}`).sort().join(',');
+    const newRemovalKey = newRemovalItems.map(item => `${item.planet}-${item.directions.length}`).sort().join(',');
+    const currentPlacementKey = placementItems.map(item => item.planet).sort().join(',');
+    const newPlacementKey = newPlacementItems.map(item => item.planet).sort().join(',');
+
+    if (currentRemovalKey !== newRemovalKey || currentPlacementKey !== newPlacementKey) {
+      if (newRemovalItems.length > 0 || newPlacementItems.length > 0) {
+        setRemovalItems(newRemovalItems.length > 0 ? newRemovalItems : [{ planet: '', directions: [''] }]);
+        setPlacementItems(newPlacementItems.length > 0 ? newPlacementItems : [{ planet: '', direction: '' }]);
+      } else {
+        setRemovalItems([{ planet: '', directions: [''] }]);
+        setPlacementItems([{ planet: '', direction: '' }]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aspectsOnHouses, aspectsOnPlanets]);
+
+  // Auto-generate color and object suggestions based on placement items
+  useEffect(() => {
+    // Planet to colors mapping
+    const planetColors = {
+      'Sun': ['Saffron', 'Golden', 'Red', 'Orange'],
+      'Moon': ['White', 'Light Blue', 'Light Grey', 'Aqua'],
+      'Mars': ['Red', 'Maroon', 'Fiery Red', 'Orange-Red'],
+      'Mercury': ['Green', 'Pale Green'],
+      'Jupiter': ['Yellow', 'Light Yellow', 'Cream', 'Golden'],
+      'Venus': ['Light Pink', 'Orange', 'Peach', 'White'],
+      'Saturn': ['Navy Blue', 'Dark Grey', 'Black', 'Light Grey'],
+      'Rahu': ['Smoky Blue', 'Charcoal', 'Muddy Brown', 'Earthy Brown'],
+      'Ketu': ['Yellow', 'Cream', 'White']
+    };
+
+    // Direction to Planets mapping (12 Rashi-linked directions)
+    const directionPlanets = {
+      'East': ['Mars'],              // Aries
+      'North-West': ['Venus'],        // Taurus
+      'North-North-West': ['Mercury'], // Gemini
+      'North-North-East': ['Moon'],   // Cancer
+      'East-North-East': ['Sun'],     // Leo
+      'North': ['Mercury'],           // Virgo
+      'West-South-West': ['Venus'],   // Libra
+      'South-South-West': ['Mars'],   // Scorpio
+      'North-East': ['Jupiter'],      // Sagittarius
+      'South': ['Saturn'],            // Capricorn
+      'West': ['Saturn'],             // Aquarius
+      'South-East': ['Jupiter']       // Pisces
+    };
+
+    // Planet to Body Parts mapping (based on Rāśi rulership)
+    const planetBodyParts = {
+      'Mars': [
+        { rashi: 'Aries', part: 'Head / Hair region', accessories: ['Ear pins', 'Hairpins', 'Headband'] },
+        { rashi: 'Scorpio', part: 'Innerwear / private zone', accessories: ['Color of undergarments'] }
+      ],
+      'Venus': [
+        { rashi: 'Taurus', part: 'Neck', accessories: ['Necklace'] },
+        { rashi: 'Libra', part: 'Waist', accessories: ['Belt', 'Waistband', 'Kamarbandh'] }
+      ],
+      'Mercury': [
+        { rashi: 'Gemini', part: 'Shoulders / Arms', accessories: ['Mobile', 'Ring', 'Bracelet', 'Wristwatch', 'Pens'] },
+        { rashi: 'Virgo', part: 'Waist / Pockets', accessories: ['Pocket emulates', 'Charms'] }
+      ],
+      'Moon': [
+        { rashi: 'Cancer', part: 'Chest (Center)', accessories: ['Long pendant'] }
+      ],
+      'Sun': [
+        { rashi: 'Leo', part: 'Chest (Left side)', accessories: ['Broach'] }
+      ],
+      'Jupiter': [
+        { rashi: 'Sagittarius', part: 'Thighs', accessories: ['Shorts', 'Trouser pockets'] },
+        { rashi: 'Pisces', part: 'Feet', accessories: ['Shoes', 'Footwear', 'Toe rings'] }
+      ],
+      'Saturn': [
+        { rashi: 'Capricorn', part: 'Knees / Lower legs', accessories: ['Trousers', 'Lowers'] },
+        { rashi: 'Aquarius', part: 'Ankles', accessories: ['Anklet'] }
+      ],
+      'Rahu': [
+        { rashi: 'Aquarius', part: 'Ankles', accessories: ['Anklet'] }
+      ],
+      'Ketu': [
+        { rashi: 'Scorpio', part: 'Innerwear / private zone', accessories: ['Color of undergarments'] }
+      ]
+    };
+
+    // Filter placement items that have both planet and direction selected
+    const validPlacements = placementItems.filter(item => item.planet && item.direction);
+
+    if (validPlacements.length === 0) {
+      setValue('colorObjectsToUse', '');
+      return;
+    }
+
+    // Generate suggestions for each placement
+    const suggestions = validPlacements.map(item => {
+      const planet = item.planet;
+      const direction = item.direction;
+
+      // Get colors for this planet
+      const colors = planetColors[planet] || [];
+
+      // Get planets associated with this direction
+      const directionPlanetsList = directionPlanets[direction] || [];
+
+      // Get body parts from all planets associated with this direction
+      const bodyPartsData = [];
+      directionPlanetsList.forEach(dirPlanet => {
+        const parts = planetBodyParts[dirPlanet] || [];
+        bodyPartsData.push(...parts);
+      });
+
+      const bodyParts = bodyPartsData.map(data => data.part).join(' or ');
+      const accessories = bodyPartsData.flatMap(data => data.accessories).slice(0, 3).join(', ');
+
+      if (!colors.length && !bodyParts) {
+        return null;
+      }
+
+      let suggestion = `• ${planet} in ${direction}:`;
+      if (colors.length) suggestion += ` Use ${colors.slice(0, 3).join(', ')} colors`;
+      if (bodyParts) suggestion += ` on ${bodyParts}`;
+      if (accessories) suggestion += ` (${accessories})`;
+
+      return suggestion;
+    }).filter(s => s !== null).join('\n');
+
+    setValue('colorObjectsToUse', suggestions);
+  }, [placementItems, setValue]);
+
+  // Auto-generate color and object suggestions for removal items (what NOT to use)
+  useEffect(() => {
+    // Planet to colors mapping
+    const planetColors = {
+      'Sun': ['Saffron', 'Golden', 'Red', 'Orange'],
+      'Moon': ['White', 'Light Blue', 'Light Grey', 'Aqua'],
+      'Mars': ['Red', 'Maroon', 'Fiery Red', 'Orange-Red'],
+      'Mercury': ['Green', 'Pale Green'],
+      'Jupiter': ['Yellow', 'Light Yellow', 'Cream', 'Golden'],
+      'Venus': ['Light Pink', 'Orange', 'Peach', 'White'],
+      'Saturn': ['Navy Blue', 'Dark Grey', 'Black', 'Light Grey'],
+      'Rahu': ['Smoky Blue', 'Charcoal', 'Muddy Brown', 'Earthy Brown'],
+      'Ketu': ['Yellow', 'Cream', 'White']
+    };
+
+    // Direction to Planets mapping (12 Rashi-linked directions)
+    const directionPlanets = {
+      'East': ['Mars'],              // Aries
+      'North-West': ['Venus'],        // Taurus
+      'North-North-West': ['Mercury'], // Gemini
+      'North-North-East': ['Moon'],   // Cancer
+      'East-North-East': ['Sun'],     // Leo
+      'North': ['Mercury'],           // Virgo
+      'West-South-West': ['Venus'],   // Libra
+      'South-South-West': ['Mars'],   // Scorpio
+      'North-East': ['Jupiter'],      // Sagittarius
+      'South': ['Saturn'],            // Capricorn
+      'West': ['Saturn'],             // Aquarius
+      'South-East': ['Jupiter']       // Pisces
+    };
+
+    // Planet to Body Parts mapping (based on Rāśi rulership)
+    const planetBodyParts = {
+      'Mars': [
+        { rashi: 'Aries', part: 'Head / Hair region', accessories: ['Ear pins', 'Hairpins', 'Headband'] },
+        { rashi: 'Scorpio', part: 'Innerwear / private zone', accessories: ['Color of undergarments'] }
+      ],
+      'Venus': [
+        { rashi: 'Taurus', part: 'Neck', accessories: ['Necklace'] },
+        { rashi: 'Libra', part: 'Waist', accessories: ['Belt', 'Waistband', 'Kamarbandh'] }
+      ],
+      'Mercury': [
+        { rashi: 'Gemini', part: 'Shoulders / Arms', accessories: ['Mobile', 'Ring', 'Bracelet', 'Wristwatch', 'Pens'] },
+        { rashi: 'Virgo', part: 'Waist / Pockets', accessories: ['Pocket emulates', 'Charms'] }
+      ],
+      'Moon': [
+        { rashi: 'Cancer', part: 'Chest (Center)', accessories: ['Long pendant'] }
+      ],
+      'Sun': [
+        { rashi: 'Leo', part: 'Chest (Left side)', accessories: ['Broach'] }
+      ],
+      'Jupiter': [
+        { rashi: 'Sagittarius', part: 'Thighs', accessories: ['Shorts', 'Trouser pockets'] },
+        { rashi: 'Pisces', part: 'Feet', accessories: ['Shoes', 'Footwear', 'Toe rings'] }
+      ],
+      'Saturn': [
+        { rashi: 'Capricorn', part: 'Knees / Lower legs', accessories: ['Trousers', 'Lowers'] },
+        { rashi: 'Aquarius', part: 'Ankles', accessories: ['Anklet'] }
+      ],
+      'Rahu': [
+        { rashi: 'Aquarius', part: 'Ankles', accessories: ['Anklet'] }
+      ],
+      'Ketu': [
+        { rashi: 'Scorpio', part: 'Innerwear / private zone', accessories: ['Color of undergarments'] }
+      ]
+    };
+
+    // Filter removal items that have both planet and at least one direction
+    const validRemovals = removalItems.filter(item =>
+      item.planet && item.directions && item.directions.some(dir => dir)
+    );
+
+    if (validRemovals.length === 0) {
+      setValue('colorObjectsNotToUse', '');
+      return;
+    }
+
+    // Generate suggestions for each removal
+    const suggestions = validRemovals.map(item => {
+      const planet = item.planet;
+      const validDirections = item.directions.filter(dir => dir);
+
+      if (validDirections.length === 0) return null;
+
+      // Get colors for this planet
+      const colors = planetColors[planet] || [];
+
+      // Get all unique body parts from all directions
+      const allBodyPartsData = [];
+      validDirections.forEach(direction => {
+        const directionPlanetsList = directionPlanets[direction] || [];
+        directionPlanetsList.forEach(dirPlanet => {
+          const parts = planetBodyParts[dirPlanet] || [];
+          allBodyPartsData.push(...parts);
+        });
+      });
+
+      // Remove duplicates
+      const uniqueBodyParts = [...new Set(allBodyPartsData.map(data => data.part))];
+      const bodyParts = uniqueBodyParts.join(' or ');
+
+      const allAccessories = allBodyPartsData.flatMap(data => data.accessories);
+      const uniqueAccessories = [...new Set(allAccessories)];
+      const accessories = uniqueAccessories.slice(0, 3).join(', ');
+
+      if (!colors.length && !bodyParts) {
+        return null;
+      }
+
+      const directionsList = validDirections.join(' and ');
+      let suggestion = `• ${planet} from ${directionsList}:`;
+      if (colors.length) suggestion += ` Avoid ${colors.slice(0, 3).join(', ')} colors`;
+      if (bodyParts) suggestion += ` on ${bodyParts}`;
+      if (accessories) suggestion += ` (${accessories})`;
+
+      return suggestion;
+    }).filter(s => s !== null).join('\n');
+
+    setValue('colorObjectsNotToUse', suggestions);
+  }, [removalItems, setValue]);
+
   const onPreview = (data) => {
-    setPreviewData(data);
+    // Format aspectsOnHouses: "Venus hits Houses 1st and 3rd at 90° and 5th at 180°"
+    const formattedAspectsOnHouses = aspectsOnHouses
+      .filter(aspect => aspect.planet && aspect.aspects.some(a => a.houses.some(h => h) && a.degree))
+      .map(aspect => {
+        const parts = aspect.aspects
+          .filter(a => a.houses.some(h => h) && a.degree)
+          .map(a => {
+            const validHouses = a.houses.filter(h => h);
+            const houseList = validHouses.map(h => `${h}${getOrdinalSuffix(h)}`).join(' and ');
+            return `${validHouses.length > 1 ? 'Houses ' : 'House '}${houseList} at ${a.degree}`;
+          });
+
+        return `${aspect.planet} hits ${parts.join(' and ')}`;
+      })
+      .join('\n');
+
+    // Format aspectsOnPlanets: "Mars hits Planets Jupiter and Venus at 120° and Saturn at 90°"
+    const formattedAspectsOnPlanets = aspectsOnPlanets
+      .filter(aspect => aspect.planet && aspect.aspects.some(a => a.planets.some(p => p) && a.degree))
+      .map(aspect => {
+        const parts = aspect.aspects
+          .filter(a => a.planets.some(p => p) && a.degree)
+          .map(a => {
+            const validPlanets = a.planets.filter(p => p);
+            const planetList = validPlanets.join(' and ');
+            return `${validPlanets.length > 1 ? 'Planets ' : 'Planet '}${planetList} at ${a.degree}`;
+          });
+
+        return `${aspect.planet} hits ${parts.join(' and ')}`;
+      })
+      .join('\n');
+
+    // Format removal items
+    const formattedRemovalItems = removalItems
+      .filter(item => item.planet && item.directions.some(d => d))
+      .map(item => {
+        const filledDirections = item.directions.filter(d => d);
+        if (filledDirections.length === 0) return null;
+
+        const directionText = filledDirections.join(' and ');
+        return `• Remove ${item.planet} from ${directionText}`;
+      })
+      .filter(item => item !== null)
+      .join('\n');
+
+    // Format placement items
+    const formattedPlacementItems = placementItems
+      .filter(item => item.planet && item.direction)
+      .map(item => `• Place ${item.planet} in ${item.direction}`)
+      .join('\n');
+
+    const updatedData = {
+      ...data,
+      aspectsOnHouses: formattedAspectsOnHouses,
+      aspectsOnPlanets: formattedAspectsOnPlanets,
+      whatToRemove: formattedRemovalItems,
+      whatToPlace: formattedPlacementItems
+    };
+
+    setPreviewData(updatedData);
     setShowPreview(true);
+  };
+
+  // Helper function for ordinal suffix
+  const getOrdinalSuffix = (num) => {
+    const n = parseInt(num);
+    if (n === 1) return 'st';
+    if (n === 2) return 'nd';
+    if (n === 3) return 'rd';
+    return 'th';
   };
 
   const onExport = async () => {
@@ -1479,52 +1889,121 @@ function ReportForm({ darkTheme }) {
           <h2>Astro Vastu Solution</h2>
 
           <div className="form-group">
-            <label htmlFor="whatToRemove">What to Remove from Which Directions</label>
-            <textarea
-              id="whatToRemove"
-              {...register('whatToRemove')}
-              placeholder="Items to remove and their directions"
-              rows="3"
-            />
+            <button
+              type="button"
+              onClick={() => setShowAspectsModal(true)}
+              className="aspects-modal-btn"
+            >
+              Aspects
+            </button>
           </div>
 
           <div className="form-group">
-            <label htmlFor="whatToPlace">What to Place in Which Directions</label>
-            <textarea
-              id="whatToPlace"
-              {...register('whatToPlace')}
-              placeholder="Items to place and their directions"
-              rows="3"
-            />
+            <label>What to Remove from Which Directions</label>
+            {removalItems.map((item, index) => (
+              <div key={index} className="removal-item-row">
+                <span className="removal-label">Remove</span>
+                <input
+                  type="text"
+                  value={item.planet}
+                  readOnly
+                  className="removal-planet-input"
+                  placeholder="Select planet in Aspects"
+                />
+                <span className="removal-label">from</span>
+                {item.directions.map((direction, dirIndex) => (
+                  <React.Fragment key={dirIndex}>
+                    <select
+                      value={direction}
+                      onChange={(e) => {
+                        const newItems = [...removalItems];
+                        newItems[index].directions[dirIndex] = e.target.value;
+                        setRemovalItems(newItems);
+                      }}
+                      className="removal-direction-select"
+                    >
+                      <option value="">Select Direction</option>
+                      <option value="East">East (Aries)</option>
+                      <option value="North-West">North-West (Taurus)</option>
+                      <option value="North-North-West">North-North-West (Gemini)</option>
+                      <option value="North-North-East">North-North-East (Cancer)</option>
+                      <option value="East-North-East">East-North-East (Leo)</option>
+                      <option value="North">North (Virgo)</option>
+                      <option value="West-South-West">West-South-West (Libra)</option>
+                      <option value="South-South-West">South-South-West (Scorpio)</option>
+                      <option value="North-East">North-East (Sagittarius)</option>
+                      <option value="South">South (Capricorn)</option>
+                      <option value="West">West (Aquarius)</option>
+                      <option value="South-East">South-East (Pisces)</option>
+                    </select>
+                    {dirIndex < item.directions.length - 1 && (
+                      <span className="removal-label">and</span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
           </div>
 
           <div className="form-group">
-            <label htmlFor="astroVastuRemediesBody">Astro Vastu Remedies for Body</label>
-            <textarea
-              id="astroVastuRemediesBody"
-              {...register('astroVastuRemediesBody')}
-              placeholder="Body remedies"
-              rows="3"
-            />
+            <label>What to Place in Which Directions</label>
+            {placementItems.map((item, index) => (
+              <div key={index} className="removal-item-row">
+                <span className="removal-label">Place</span>
+                <input
+                  type="text"
+                  value={item.planet}
+                  readOnly
+                  className="removal-planet-input"
+                  placeholder="Select planet in Aspects"
+                />
+                <span className="removal-label">in</span>
+                <select
+                  value={item.direction}
+                  onChange={(e) => {
+                    const newItems = [...placementItems];
+                    newItems[index].direction = e.target.value;
+                    setPlacementItems(newItems);
+                  }}
+                  className="removal-direction-select"
+                >
+                  <option value="">Select Direction</option>
+                  <option value="East">East (Aries)</option>
+                  <option value="North-West">North-West (Taurus)</option>
+                  <option value="North-North-West">North-North-West (Gemini)</option>
+                  <option value="North-North-East">North-North-East (Cancer)</option>
+                  <option value="East-North-East">East-North-East (Leo)</option>
+                  <option value="North">North (Virgo)</option>
+                  <option value="West-South-West">West-South-West (Libra)</option>
+                  <option value="South-South-West">South-South-West (Scorpio)</option>
+                  <option value="North-East">North-East (Sagittarius)</option>
+                  <option value="South">South (Capricorn)</option>
+                  <option value="West">West (Aquarius)</option>
+                  <option value="South-East">South-East (Pisces)</option>
+                </select>
+              </div>
+            ))}
           </div>
 
           <div className="form-group">
-            <label htmlFor="colorObjectsToUse">What Color or Objects to Use on Body</label>
-            <input
+            <label htmlFor="colorObjectsToUse">What Color or Objects to Use on Body (Auto-generated from placements)</label>
+            <textarea
               id="colorObjectsToUse"
-              type="text"
               {...register('colorObjectsToUse')}
-              placeholder="Colors/objects to use"
+              placeholder="Select planets and directions in 'What to Place' section above..."
+              rows="5"
+              style={{ resize: 'vertical' }}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="colorObjectsNotToUse">What Color or Objects NOT to Use on Body</label>
-            <input
+            <label htmlFor="colorObjectsNotToUse">What Color or Objects NOT to Use on Body (Auto-generated from removals)</label>
+            <textarea
               id="colorObjectsNotToUse"
-              type="text"
               {...register('colorObjectsNotToUse')}
-              placeholder="Colors/objects to avoid"
+              placeholder="Select planets and directions in 'What to Remove' section above..."
+              rows="5"
+              style={{ resize: 'vertical' }}
             />
           </div>
 
@@ -1558,6 +2037,366 @@ function ReportForm({ darkTheme }) {
             />
           </div>
         </div>
+
+        {/* Aspects Modal */}
+        {showAspectsModal && (
+          <div className="aspects-modal-overlay" onClick={() => setShowAspectsModal(false)}>
+            <div className="aspects-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="aspects-modal-header">
+                <h2>Aspects Configuration</h2>
+                <button
+                  type="button"
+                  onClick={() => setShowAspectsModal(false)}
+                  className="aspects-modal-close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="aspects-modal-body">
+                <div className="aspects-modal-section">
+                  <h3>Aspects on Houses</h3>
+                  {aspectsOnHouses.map((aspect, aspectIndex) => (
+                <div key={aspectIndex} className="aspect-container">
+                  <div className="aspect-row">
+                    <select
+                      value={aspect.planet}
+                      onChange={(e) => {
+                        const newAspects = [...aspectsOnHouses];
+                        newAspects[aspectIndex].planet = e.target.value;
+                        setAspectsOnHouses(newAspects);
+                      }}
+                      className="aspect-select"
+                    >
+                      <option value="">Planet</option>
+                      <option value="Sun">Sun</option>
+                      <option value="Moon">Moon</option>
+                      <option value="Mars">Mars</option>
+                      <option value="Mercury">Mercury</option>
+                      <option value="Jupiter">Jupiter</option>
+                      <option value="Venus">Venus</option>
+                      <option value="Saturn">Saturn</option>
+                      <option value="Rahu">Rahu</option>
+                      <option value="Ketu">Ketu</option>
+                    </select>
+
+                    <span className="aspect-label">hits</span>
+
+                    {aspect.aspects.map((aspectItem, aspectItemIndex) => (
+                      <React.Fragment key={aspectItemIndex}>
+                        {aspectItemIndex > 0 && <span className="aspect-label">and</span>}
+
+                        {aspectItem.houses.map((house, houseIndex) => (
+                          <React.Fragment key={houseIndex}>
+                            {houseIndex > 0 && <span className="aspect-label">&</span>}
+
+                            <select
+                              value={house}
+                              onChange={(e) => {
+                                const newAspects = [...aspectsOnHouses];
+                                newAspects[aspectIndex].aspects[aspectItemIndex].houses[houseIndex] = e.target.value;
+                                setAspectsOnHouses(newAspects);
+                              }}
+                              className="aspect-select aspect-select-small"
+                            >
+                              <option value="">H</option>
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => (
+                                <option key={num} value={num}>{num}</option>
+                              ))}
+                            </select>
+
+                            {houseIndex === aspectItem.houses.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newAspects = [...aspectsOnHouses];
+                                  newAspects[aspectIndex].aspects[aspectItemIndex].houses.push('');
+                                  setAspectsOnHouses(newAspects);
+                                }}
+                                className="aspect-btn aspect-btn-tiny"
+                                title="Add house at same degree"
+                              >
+                                +
+                              </button>
+                            )}
+
+                            {aspectItem.houses.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newAspects = [...aspectsOnHouses];
+                                  newAspects[aspectIndex].aspects[aspectItemIndex].houses =
+                                    newAspects[aspectIndex].aspects[aspectItemIndex].houses.filter((_, i) => i !== houseIndex);
+                                  setAspectsOnHouses(newAspects);
+                                }}
+                                className="aspect-btn aspect-btn-tiny aspect-btn-remove"
+                                title="Remove house"
+                              >
+                                −
+                              </button>
+                            )}
+                          </React.Fragment>
+                        ))}
+
+                        <span className="aspect-label">at</span>
+
+                        <select
+                          value={aspectItem.degree}
+                          onChange={(e) => {
+                            const newAspects = [...aspectsOnHouses];
+                            newAspects[aspectIndex].aspects[aspectItemIndex].degree = e.target.value;
+                            setAspectsOnHouses(newAspects);
+                          }}
+                          className="aspect-select aspect-select-small"
+                        >
+                          <option value="">°</option>
+                          <option value="90°">90°</option>
+                          <option value="120°">120°</option>
+                          <option value="180°">180°</option>
+                        </select>
+
+                        {aspectItemIndex === aspect.aspects.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newAspects = [...aspectsOnHouses];
+                              newAspects[aspectIndex].aspects.push({ houses: [''], degree: '' });
+                              setAspectsOnHouses(newAspects);
+                            }}
+                            className="aspect-btn aspect-btn-mini"
+                            title="Add different degree"
+                          >
+                            +
+                          </button>
+                        )}
+
+                        {aspect.aspects.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newAspects = [...aspectsOnHouses];
+                              newAspects[aspectIndex].aspects = newAspects[aspectIndex].aspects.filter((_, i) => i !== aspectItemIndex);
+                              setAspectsOnHouses(newAspects);
+                            }}
+                            className="aspect-btn aspect-btn-mini aspect-btn-remove"
+                            title="Remove aspect"
+                          >
+                            −
+                          </button>
+                        )}
+                      </React.Fragment>
+                    ))}
+
+                    {aspectIndex === aspectsOnHouses.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setAspectsOnHouses([...aspectsOnHouses, { planet: '', aspects: [{ houses: [''], degree: '' }] }])}
+                        className="aspect-btn"
+                        title="Add new planet"
+                      >
+                        ⊕
+                      </button>
+                    )}
+
+                    {aspectsOnHouses.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newAspects = aspectsOnHouses.filter((_, i) => i !== aspectIndex);
+                          setAspectsOnHouses(newAspects);
+                        }}
+                        className="aspect-btn aspect-btn-remove"
+                        title="Remove planet"
+                      >
+                        ⊖
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+                </div>
+
+                <div className="aspects-modal-section">
+                  <h3>Aspects on Planets</h3>
+                  {aspectsOnPlanets.map((aspect, aspectIndex) => (
+                <div key={aspectIndex} className="aspect-container">
+                  <div className="aspect-row">
+                    <select
+                      value={aspect.planet}
+                      onChange={(e) => {
+                        const newAspects = [...aspectsOnPlanets];
+                        newAspects[aspectIndex].planet = e.target.value;
+                        setAspectsOnPlanets(newAspects);
+                      }}
+                      className="aspect-select"
+                    >
+                      <option value="">Planet</option>
+                      <option value="Sun">Sun</option>
+                      <option value="Moon">Moon</option>
+                      <option value="Mars">Mars</option>
+                      <option value="Mercury">Mercury</option>
+                      <option value="Jupiter">Jupiter</option>
+                      <option value="Venus">Venus</option>
+                      <option value="Saturn">Saturn</option>
+                      <option value="Rahu">Rahu</option>
+                      <option value="Ketu">Ketu</option>
+                    </select>
+
+                    <span className="aspect-label">hits</span>
+
+                    {aspect.aspects.map((aspectItem, aspectItemIndex) => (
+                      <React.Fragment key={aspectItemIndex}>
+                        {aspectItemIndex > 0 && <span className="aspect-label">and</span>}
+
+                        {aspectItem.planets.map((planet, planetIndex) => (
+                          <React.Fragment key={planetIndex}>
+                            {planetIndex > 0 && <span className="aspect-label">&</span>}
+
+                            <select
+                              value={planet}
+                              onChange={(e) => {
+                                const newAspects = [...aspectsOnPlanets];
+                                newAspects[aspectIndex].aspects[aspectItemIndex].planets[planetIndex] = e.target.value;
+                                setAspectsOnPlanets(newAspects);
+                              }}
+                              className="aspect-select aspect-select-small"
+                            >
+                              <option value="">P</option>
+                              <option value="Sun">Sun</option>
+                              <option value="Moon">Moon</option>
+                              <option value="Mars">Mars</option>
+                              <option value="Mercury">Mercury</option>
+                              <option value="Jupiter">Jupiter</option>
+                              <option value="Venus">Venus</option>
+                              <option value="Saturn">Saturn</option>
+                              <option value="Rahu">Rahu</option>
+                              <option value="Ketu">Ketu</option>
+                            </select>
+
+                            {planetIndex === aspectItem.planets.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newAspects = [...aspectsOnPlanets];
+                                  newAspects[aspectIndex].aspects[aspectItemIndex].planets.push('');
+                                  setAspectsOnPlanets(newAspects);
+                                }}
+                                className="aspect-btn aspect-btn-tiny"
+                                title="Add planet at same degree"
+                              >
+                                +
+                              </button>
+                            )}
+
+                            {aspectItem.planets.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newAspects = [...aspectsOnPlanets];
+                                  newAspects[aspectIndex].aspects[aspectItemIndex].planets =
+                                    newAspects[aspectIndex].aspects[aspectItemIndex].planets.filter((_, i) => i !== planetIndex);
+                                  setAspectsOnPlanets(newAspects);
+                                }}
+                                className="aspect-btn aspect-btn-tiny aspect-btn-remove"
+                                title="Remove planet"
+                              >
+                                −
+                              </button>
+                            )}
+                          </React.Fragment>
+                        ))}
+
+                        <span className="aspect-label">at</span>
+
+                        <select
+                          value={aspectItem.degree}
+                          onChange={(e) => {
+                            const newAspects = [...aspectsOnPlanets];
+                            newAspects[aspectIndex].aspects[aspectItemIndex].degree = e.target.value;
+                            setAspectsOnPlanets(newAspects);
+                          }}
+                          className="aspect-select aspect-select-small"
+                        >
+                          <option value="">°</option>
+                          <option value="90°">90°</option>
+                          <option value="120°">120°</option>
+                          <option value="180°">180°</option>
+                        </select>
+
+                        {aspectItemIndex === aspect.aspects.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newAspects = [...aspectsOnPlanets];
+                              newAspects[aspectIndex].aspects.push({ planets: [''], degree: '' });
+                              setAspectsOnPlanets(newAspects);
+                            }}
+                            className="aspect-btn aspect-btn-mini"
+                            title="Add different degree"
+                          >
+                            +
+                          </button>
+                        )}
+
+                        {aspect.aspects.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newAspects = [...aspectsOnPlanets];
+                              newAspects[aspectIndex].aspects = newAspects[aspectIndex].aspects.filter((_, i) => i !== aspectItemIndex);
+                              setAspectsOnPlanets(newAspects);
+                            }}
+                            className="aspect-btn aspect-btn-mini aspect-btn-remove"
+                            title="Remove aspect"
+                          >
+                            −
+                          </button>
+                        )}
+                      </React.Fragment>
+                    ))}
+
+                    {aspectIndex === aspectsOnPlanets.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setAspectsOnPlanets([...aspectsOnPlanets, { planet: '', aspects: [{ planets: [''], degree: '' }] }])}
+                        className="aspect-btn"
+                        title="Add new planet"
+                      >
+                        ⊕
+                      </button>
+                    )}
+
+                    {aspectsOnPlanets.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newAspects = aspectsOnPlanets.filter((_, i) => i !== aspectIndex);
+                          setAspectsOnPlanets(newAspects);
+                        }}
+                        className="aspect-btn aspect-btn-remove"
+                        title="Remove planet"
+                      >
+                        ⊖
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+                </div>
+              </div>
+
+              <div className="aspects-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setShowAspectsModal(false)}
+                  className="aspects-modal-done-btn"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* GUIDELINES */}
         <div className="form-section">

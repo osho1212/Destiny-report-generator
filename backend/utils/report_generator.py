@@ -190,6 +190,8 @@ class ReportGenerator:
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
+            ('aspectsOnHouses', 'Aspects on Houses'),
+            ('aspectsOnPlanets', 'Aspects on Planets'),
             ('whatToRemove', 'What to Remove from Which Directions'),
             ('whatToPlace', 'What to Place in Which Directions'),
             ('astroVastuRemediesBody', 'Astro Vastu Remedies for Body'),
@@ -312,6 +314,8 @@ class ReportGenerator:
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
+            ('aspectsOnHouses', 'Aspects on Houses'),
+            ('aspectsOnPlanets', 'Aspects on Planets'),
             ('whatToRemove', 'What to Remove from Which Directions'),
             ('whatToPlace', 'What to Place in Which Directions'),
             ('astroVastuRemediesBody', 'Astro Vastu Remedies for Body'),
@@ -455,6 +459,8 @@ class ReportGenerator:
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
+            ('aspectsOnHouses', 'Aspects on Houses'),
+            ('aspectsOnPlanets', 'Aspects on Planets'),
             ('whatToRemove', 'What to Remove from Which Directions'),
             ('whatToPlace', 'What to Place in Which Directions'),
             ('astroVastuRemediesBody', 'Astro Vastu Remedies for Body'),
