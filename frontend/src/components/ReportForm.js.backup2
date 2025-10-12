@@ -145,555 +145,86 @@ const planetMantraInfo = {
 
 // Nakshatra information with symbols
 const nakshatraInfo = {
-  'Ashwani': {
-    mobileDisplayPicture: `◦ Drum/Pair of fish
-◦ Coiled serpent/female cat/owl/blue sparrow`,
-    beneficialSymbols: `◦ Drum/Pair of fish
-◦ Coiled serpent/female cat/owl/blue sparrow`,
-    prosperitySymbols: `◦ Inverted triangle/ELEPHANT/CROW
-◦ Winnowing Basket/MALE MONKEY`,
-    mentalPhysicalWellbeing: `◦ Hand/fist/FEMALE BUFFALO/FALCON`,
-    accomplishments: `◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    avoidSymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ POTTER'S WHEEL/MALE TIGER
-◦ SWORD/MALE LION/PIGEON
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`
+  'Ashvini': {
+    mobileDisplayPicture: `• Drum/Pair of fish
+• Coiled serpent/Female cat/Owl/Blue sparrow`,
+    beneficialSymbols: `• Drum/Pair of fish
+• Coiled serpent/Female cat/Owl/Blue sparrow`,
+    prosperitySymbols: `• Inverted triangle/ELEPHANT/CROW
+• Winnowing Basket/MALE MONKEY`,
+    mentalPhysicalWellbeing: `• Hand/fist/FEMALE BUFFALO/FALCON`,
+    accomplishments: `• Shoot of a plant/MALE BUFFALO
+• Tears/FEMALE DOG
+• Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
+    avoidSymbols: `• Bright jewel/pearl/FEMALE TIGER/WOODPECKER
+• POTTER'S WHEEL/MALE TIGER
+• SWORD/MALE LION/PIGEON
+• BOW AND ARROW/FEMALE CAT/SWAN
+• Deer's head/FEMALE SERPENT/HEN
+• A drum/flute/FEMALE LION/PEACOCK
+• Sharp knife/GOAT/PEACOCK
+• Elephants tusks/MALE MANGOOSE/STORK`
   },
   'Bharani': {
-    mobileDisplayPicture: `◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
-    beneficialSymbols: `◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
-    prosperitySymbols: `◦ SHARP KNIFE/GOAT/PEACOCK
-◦ ELEPHANT TUSK/MALE MANGOOSE/STORK`,
-    mentalPhysicalWellbeing: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER`,
-    accomplishments: `◦ Potter's wheel/MALE TIGER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`,
-    avoidSymbols: `◦ LOTUS/FEMALE DEER/NIGHTINGALE
-◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`
+    mobileDisplayPicture: `• Horse head/HORSE/EAGLE
+• ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
+    beneficialSymbols: `• Horse head/HORSE/EAGLE
+• ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
+    prosperitySymbols: `• SHARP KNIFE/GOAT/PEACOCK
+• ELEPHANT TUSK/MALE MANGOOSE/STORK`,
+    mentalPhysicalWellbeing: `• Bright jewel/pearl/FEMALE TIGER/WOODPECKER`,
+    accomplishments: `• Potter's wheel/MALE TIGER
+• SWORD/MALE LION/PIGEON
+• BOW AND ARROW/FEMALE CAT/SWAN`,
+    avoidSymbols: `• LOTUS/FEMALE DEER/NIGHTINGALE
+• Three foot prints/FEMALE MONKEY
+• Hand or Fist/FEMALE BUFFALO/FALCON
+• Chariot/SERPENT/WHITE OWL
+• Shoot of a plant/MALE BUFFALO
+• Tears/FEMALE DOG
+• Empty circles of ring/FEMALE HORSE/ASIAN KOEL
+• UDDER OF A COW/GOAT/SEA CROW
+• SERPENT IN WATER/FEMALE COW`
   },
   'Krittika': {
-    mobileDisplayPicture: `◦ Inverted triangle/ELEPHANT/crow`,
-    beneficialSymbols: `◦ Inverted triangle/ELEPHANT/crow`,
-    prosperitySymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ CHARIOT/SERPENT/WHITE OWL`,
-    mentalPhysicalWellbeing: `◦ SHOOT OF A PLANT/MALE BUFFALO`,
-    accomplishments: `◦ Udder of a cow/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE`,
-    avoidSymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Potter's wheel/MALE TIGER
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK`
+    mobileDisplayPicture: `• Inverted triangle/ELEPHANT/crow`,
+    beneficialSymbols: `• Inverted triangle/ELEPHANT/crow`,
+    prosperitySymbols: `• Three foot prints/FEMALE MONKEY
+• CHARIOT/SERPENT/WHITE OWL`,
+    mentalPhysicalWellbeing: `• SHOOT OF A PLANT/MALE BUFFALO`,
+    accomplishments: `• Udder of a cow/GOAT/SEA CROW
+• SERPENT IN WATER/FEMALE COW
+• Lotus/FEMALE DEER/NIGHTINGALE`,
+    avoidSymbols: `• Bright jewel/pearl/FEMALE TIGER/WOODPECKER
+• COILED SERPENT/FEMALE CAT/OWL
+• Potter's wheel/MALE TIGER
+• Drum/pair of fish/FEMALE ELEPHANT
+• Circular amulet/umbrella/ear rings/MALE DEER
+• SWORD/MALE LION/PIGEON
+• BOW AND ARROW/FEMALE CAT/SWAN
+• Deer's head/FEMALE SERPENT/HEN
+• A drum/flute/FEMALE LION/PEACOCK`
   },
   'Rohini': {
-    mobileDisplayPicture: `◦ Sharp knife/GOAT/PEACOCK
-◦ UTTARAFALFUNI/MALE COW(NANDI)/PEACOCK`,
-    beneficialSymbols: `◦ Sharp knife/GOAT/PEACOCK
-◦ UTTARAFALFUNI/MALE COW(NANDI)/PEACOCK`,
-    prosperitySymbols: `◦ DEER'S HEAD/FEMALE SERPENT/HEN
-◦ Drum/FLUTE/FEMALE LION/PEACOCK`,
-    mentalPhysicalWellbeing: `◦ POTTER'S WHEEL/MALE TIGER`,
-    accomplishments: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    avoidSymbols: `◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE
-◦ Shoot of a plant
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ Horse head/HORSE/EAGLE
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
-◦ UDDER OF A COW/GOAT/SEA CROW`
-  },
-  'Mrigashira': {
-    mobileDisplayPicture: `◦ HASTA/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL`,
-    beneficialSymbols: `◦ HASTA/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL`,
-    prosperitySymbols: `◦ Tear/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    mentalPhysicalWellbeing: `◦ Lotus/FEMALE DEER/NIGHTINGALE`,
-    accomplishments: `◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
-    avoidSymbols: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Potter's wheel/MALE TIGER
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`
-  },
-  'Ardra': {
-    mobileDisplayPicture: `◦ Deer's Head/FEMALE SERPENT/HEN
-◦ BRIGHT JEWEL/PEARL/FEMALE TIGER/WOODPECKER`,
-    beneficialSymbols: `◦ Deer's Head/FEMALE SERPENT/HEN
-◦ BRIGHT JEWEL/PEARL/FEMALE TIGER/WOODPECKER`,
-    prosperitySymbols: `◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Swords/MALE LION/PIGEON`,
-    mentalPhysicalWellbeing: `◦ Circular amulet/umbrella/ear ring/MALE DEER(STAG)`,
-    accomplishments: `◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`,
-    avoidSymbols: `◦ Lotus/FEMALE DEER/NIGHTINGALE
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN
-◦ RETICULATED ROOT
-◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`
-  },
-  'Punarvasu': {
-    mobileDisplayPicture: `◦ TEAR/FEMALE DOG
-◦ Shoot of a plant/MALE BUFFALO`,
-    beneficialSymbols: `◦ TEAR/FEMALE DOG
-◦ Shoot of a plant/MALE BUFFALO`,
-    prosperitySymbols: `◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`,
-    mentalPhysicalWellbeing: `◦ Reticulated root/MALE DOG/RED VULTURE`,
-    accomplishments: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`,
-    avoidSymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`
-  },
-  'Pushya': {
-    mobileDisplayPicture: `◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ POTTER'S WHEEL/MALE TIGER`,
-    beneficialSymbols: `◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ POTTER'S WHEEL/MALE TIGER`,
-    prosperitySymbols: `◦ COILED SERPEN/FEMALE CAT/OWL/BLUE SPARROW
-◦ Pair of fish/FEMALE ELEPHANT`,
-    mentalPhysicalWellbeing: `◦ WINNOWING BASKET/MALE MONKEY`,
-    accomplishments: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL`,
-    avoidSymbols: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN
-◦ RETICULATED ROOT
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ A drum/flute/FEMALE LION/PEACOCK`
-  },
-  'Ashlesha': {
-    mobileDisplayPicture: `◦ UDDER OF A COW/GOAT/SEA CROW
-◦ LOTUS/FEMALE DEER/NIGHTINGALE`,
-    beneficialSymbols: `◦ UDDER OF A COW/GOAT/SEA CROW
-◦ LOTUS/FEMALE DEER/NIGHTINGALE`,
-    prosperitySymbols: `◦ ROYAL THRONE/PALANQUIN
-◦ Horse head/HORSE/EAGLE`,
-    mentalPhysicalWellbeing: `◦ ELEPHANT TUSK/MALE MANGOOSE/STORK`,
-    accomplishments: `◦ Deer's head/FEMALE SERPENT/HEN
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ A drum/flute/FEMALE LION/PEACOCK`,
-    avoidSymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`
-  },
-  'Magha': {
-    mobileDisplayPicture: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    beneficialSymbols: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    prosperitySymbols: `◦ Inverted triangle/ELEPHANT/CROW
-◦ Swinging hammock/FEMALE RAT/FEMALE EAGLE`,
-    mentalPhysicalWellbeing: `◦ Three foot print/FEMALE MONKEY`,
-    accomplishments: `◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    avoidSymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ POTTER'S WHEEL/MALE TIGER
-◦ SWORD/MALE LION/PIGEON
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`
-  },
-  'Purva Phalguni': {
-    mobileDisplayPicture: `◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE`,
-    beneficialSymbols: `◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE`,
-    prosperitySymbols: `◦ SHARP KNIFE/GOAT/PEACOCK`,
-    mentalPhysicalWellbeing: `◦ A drum/flute/FEMALE LION/PEACOCK`,
-    accomplishments: `◦ Potter's wheel/MALE TIGER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`,
-    avoidSymbols: `◦ LOTUS/FEMALE DEER/NIGHTINGALE
-◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`
-  },
-  'Uttara Phalguni': {
-    mobileDisplayPicture: `◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Winnowing basket/MALE MONKEY`,
-    beneficialSymbols: `◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Winnowing basket/MALE MONKEY`,
-    prosperitySymbols: `◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL`,
-    mentalPhysicalWellbeing: `◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    accomplishments: `◦ Udder of a cow/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE`,
-    avoidSymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Potter's wheel/MALE TIGER
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK`
-  },
-  'Hasta': {
-    mobileDisplayPicture: `◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ MALE COW(NANDI)/PEACOCK`,
-    beneficialSymbols: `◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ MALE COW(NANDI)/PEACOCK`,
-    prosperitySymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ DEER'S HEAD/FEMALE SERPENT/HEN`,
-    mentalPhysicalWellbeing: `◦ SWORD/MALE LION/PIGEON`,
-    accomplishments: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    avoidSymbols: `◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE
-◦ Shoot of a plant
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ Horse head/HORSE/EAGLE
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
-◦ UDDER OF A COW/GOAT/SEA CROW`
-  },
-  'Chitra': {
-    mobileDisplayPicture: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON`,
-    beneficialSymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON`,
-    prosperitySymbols: `◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG`,
-    mentalPhysicalWellbeing: `◦ SERPENT IN WATER/FEMALE COW`,
-    accomplishments: `◦ ROYAL THRONE/PALANQUIN
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE`,
-    avoidSymbols: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Drum/Pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ Potter's wheel/MALE TIGER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`
-  },
-  'Swati': {
-    mobileDisplayPicture: `◦ A drum/flute/FEMALE LION/PEACOCK
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER`,
-    beneficialSymbols: `◦ A drum/flute/FEMALE LION/PEACOCK
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER`,
-    prosperitySymbols: `◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ POTTER'S WHEEL/MALE TIGER`,
-    mentalPhysicalWellbeing: `◦ Drum/pair of fish/FEMALE ELEPHANT`,
-    accomplishments: `◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`,
-    avoidSymbols: `◦ Lotus/FEMALE DEER/NIGHTINGALE
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN
-◦ RETICULATED ROOT
-◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`
-  },
-  'Vishakha': {
-    mobileDisplayPicture: `◦ Shoot of a plant/MALE BUFFALO
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    beneficialSymbols: `◦ Shoot of a plant/MALE BUFFALO
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    prosperitySymbols: `◦ LOTUS/FEMALE DEER/NIGHTINGALE
-◦ UDDER OF A COW/GOAT/SEA CROW`,
-    mentalPhysicalWellbeing: `◦ Horse head/HORSE/EAGLE`,
-    accomplishments: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`,
-    avoidSymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`
-  },
-  'Anuradha': {
-    mobileDisplayPicture: `◦ Potter's wheel/MALE TIGER
-◦ SWORD/MALE LION/PIGION`,
-    beneficialSymbols: `◦ Potter's wheel/MALE TIGER
-◦ SWORD/MALE LION/PIGION`,
-    prosperitySymbols: `◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ COILED SERPENT/FEMALE CAT/OWL`,
-    mentalPhysicalWellbeing: `◦ Inverted triangle/ELEPHANT/CROW`,
-    accomplishments: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL`,
-    avoidSymbols: `◦ Deer's head/FEMALE SERPENT/HEN
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ A drum/flute/FEMALE LION/PEACOCK
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`
-  },
-  'Jyeshtha': {
-    mobileDisplayPicture: `◦ SERPENT IN WATER/FEMALE COW
-◦ LOTUS/FEMALE DEER/NIGHTINGALE`,
-    beneficialSymbols: `◦ SERPENT IN WATER/FEMALE COW
-◦ LOTUS/FEMALE DEER/NIGHTINGALE`,
-    prosperitySymbols: `◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE`,
-    mentalPhysicalWellbeing: `◦ SHARP KNIFE/GOAT/PEACOCK`,
-    accomplishments: `◦ Deer's head/FEMALE SERPENT/HEN
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ A drum/flute/FEMALE LION/PEACOCK`,
-    avoidSymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`
-  },
-  'Mula': {
-    mobileDisplayPicture: `◦ Pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    beneficialSymbols: `◦ Pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    prosperitySymbols: `◦ Swinging hammock/FEMALE RAT/FEMALE EAGLE
-◦ Winnowing basket/MALE MONKEY`,
-    mentalPhysicalWellbeing: `◦ Chariot/SERPENT/WHITE OWL`,
-    accomplishments: `◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    avoidSymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ POTTER'S WHEEL/MALE TIGER
-◦ SWORD/MALE LION/PIGEON
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`
-  },
-  'Purva Ashadha': {
-    mobileDisplayPicture: `◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE`,
-    beneficialSymbols: `◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE`,
-    prosperitySymbols: `◦ ELEPHANT TUSK/MALE MANGOOSE/STORK`,
-    mentalPhysicalWellbeing: `◦ DEER'S HEAD/FEMALE SERPENT/HEN`,
-    accomplishments: `◦ Potter's wheel/MALE TIGER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`,
-    avoidSymbols: `◦ LOTUS/FEMALE DEER/NIGHTINGALE
-◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`
-  },
-  'Uttara Ashadha': {
-    mobileDisplayPicture: `◦ Winnowing basket/MALE MONKEY
-◦ Inverted triangle/ELEPHANT/CROW`,
-    beneficialSymbols: `◦ Winnowing basket/MALE MONKEY
-◦ Inverted triangle/ELEPHANT/CROW`,
-    prosperitySymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON`,
-    mentalPhysicalWellbeing: `◦ TEAR/FEMALE DOG`,
-    accomplishments: `◦ Udder of a cow/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE`,
-    avoidSymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Potter's wheel/MALE TIGER
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK`
-  },
-  'Shravana': {
-    mobileDisplayPicture: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`,
-    beneficialSymbols: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`,
-    prosperitySymbols: `◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ Drum/flute/FEMALE LION/PEACOCK`,
-    mentalPhysicalWellbeing: `◦ BOW AND ARROW/FEMALE CAT/SWAN`,
-    accomplishments: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    avoidSymbols: `◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE
-◦ Shoot of a plant
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ Horse head/HORSE/EAGLE
-◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
-◦ UDDER OF A COW/GOAT/SEA CROW`
-  },
-  'Dhanishta': {
-    mobileDisplayPicture: `◦ Three foot prints/FEMALE MONKEY
-◦ Chariot/SERPENT/WHITE OWL`,
-    beneficialSymbols: `◦ Three foot prints/FEMALE MONKEY
-◦ Chariot/SERPENT/WHITE OWL`,
-    prosperitySymbols: `◦ Shoot of a plant/MALE BUFFALO
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    mentalPhysicalWellbeing: `◦ UDDER OF A COW/GOAT/SEA CROW`,
-    accomplishments: `◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
-    avoidSymbols: `◦ COILED SERPENT/FEMALE CAT/OWL
-◦ Potter's wheel/MALE TIGER
-◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW
-◦ Circular amulet/umbrella/ear rings/MALE DEER
-◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`
-  },
-  'Shatabhisha': {
-    mobileDisplayPicture: `◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK`,
-    beneficialSymbols: `◦ Deer's head/FEMALE SERPENT/HEN
-◦ A drum/flute/FEMALE LION/PEACOCK`,
-    prosperitySymbols: `◦ POTTER'S WHEEL/MALE TIGER
-◦ SWORD/MALE LION/PIGEON`,
-    mentalPhysicalWellbeing: `◦ COILED SERPENT/FEMALE CAT/OWL`,
-    accomplishments: `◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`,
-    avoidSymbols: `◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE
-◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE
-◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`
-  },
-  'Purva Bhadrapada': {
-    mobileDisplayPicture: `◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    beneficialSymbols: `◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL`,
-    prosperitySymbols: `◦ SERPENT IN WATER/FEMALE COW
-◦ Lotus/FEMALE DEER/NIGHTINGALE`,
-    mentalPhysicalWellbeing: `◦ ROYAL THRONE/PALANQUIN/MOUSE/EAGLE`,
-    accomplishments: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK`,
-    avoidSymbols: `◦ Drum/pair of fish/FEMALE ELEPHANT
-◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW
-◦ Circular amulet/umbrella/ear rings/MALE DEER`
-  },
-  'Uttara Bhadrapada': {
-    mobileDisplayPicture: `◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`,
-    beneficialSymbols: `◦ SWORD/MALE LION/PIGION
-◦ BOW AND ARROW/FEMALE CAT/SWAN`,
-    prosperitySymbols: `◦ Pair of fish/FEMALE ELEPHANT
-◦ Circular amulet/umbrella/ear rings/MALE DEER`,
-    mentalPhysicalWellbeing: `◦ SWINGING HAMMOCK/FEMALE RAT/FEMALE EAGLE`,
-    accomplishments: `◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL`,
-    avoidSymbols: `◦ Sharp knife/GOAT/PEACOCK
-◦ Elephants tusks/MALE MANGOOSE/STORK
-◦ Horse head/HORSE/EAGLE
-◦ ROYAL THRONE/PALANQUIN
-◦ RETICULATED ROOT
-◦ Deer's head/FEMALE SERPENT/HEN
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ A drum/flute/FEMALE LION/PEACOCK`
-  },
-  'Revati': {
-    mobileDisplayPicture: `◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`,
-    beneficialSymbols: `◦ UDDER OF A COW/GOAT/SEA CROW
-◦ SERPENT IN WATER/FEMALE COW`,
-    prosperitySymbols: `◦ RETICULATED ROOT/MALE DOG/RED VULTURE
-◦ Horse head/HORSE/EAGLE`,
-    mentalPhysicalWellbeing: `◦ Male cow(Nandi)/Peacock`,
-    accomplishments: `◦ Deer's head/FEMALE SERPENT/HEN
-◦ Bright jewel/pearl/FEMALE TIGER/WOODPECKER
-◦ A drum/flute/FEMALE LION/PEACOCK`,
-    avoidSymbols: `◦ Shoot of a plant/MALE BUFFALO
-◦ Tears/FEMALE DOG
-◦ Empty circles of ring/FEMALE HORSE/ASIAN KOEL
-◦ Three foot prints/FEMALE MONKEY
-◦ Hand or Fist/FEMALE BUFFALO/FALCON
-◦ Chariot/SERPENT/WHITE OWL
-◦ Winnowing basket/MALE MONKEY
-◦ Swinging Hammock/FEMALE RAT/FEMALE EAGLE
-◦ Inverted triangle/ELEPHANT/CROW`
+    mobileDisplayPicture: `• Sharp knife/GOAT/PEACOCK
+• MALE COW(NANDI)/PEACOCK`,
+    beneficialSymbols: `• Sharp knife/GOAT/PEACOCK
+• MALE COW(NANDI)/PEACOCK`,
+    prosperitySymbols: `• DEER'S HEAD/FEMALE SERPENT/HEN
+• Drum/FLUTE/FEMALE LION/PEACOCK`,
+    mentalPhysicalWellbeing: `• POTTER'S WHEEL/MALE TIGER`,
+    accomplishments: `• COILED SERPENT/FEMALE CAT/OWL
+• Drum/pair of fish/FEMALE ELEPHANT
+• Circular amulet/umbrella/ear rings/MALE DEER`,
+    avoidSymbols: `• SERPENT IN WATER/FEMALE COW
+• Lotus/FEMALE DEER/NIGHTINGALE
+• Shoot of a plant
+• Tears/FEMALE DOG
+• Empty circles of ring/FEMALE HORSE/ASIAN KOEL
+• Horse head/HORSE/EAGLE
+• RETICULATED ROOT/MALE DOG/RED VULTURE
+• ROYAL THRONE/PALANQUIN/MOUSE/EAGLE
+• UDDER OF A COW/GOAT/SEA CROW`
   }
 };
 
@@ -1376,7 +907,7 @@ function ReportForm({ darkTheme }) {
               list="nakshatra-list"
             />
             <datalist id="nakshatra-list">
-              <option value="Ashwani" />
+              <option value="Ashvini" />
               <option value="Bharani" />
               <option value="Krittika" />
               <option value="Rohini" />
@@ -1403,6 +934,7 @@ function ReportForm({ darkTheme }) {
               <option value="Purva Bhadrapada" />
               <option value="Uttara Bhadrapada" />
               <option value="Revati" />
+              <option value="Abhijit" />
             </datalist>
             <span className="help-text">⭐ Select a nakshatra to auto-fill symbol fields below</span>
           </div>

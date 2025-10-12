@@ -113,7 +113,6 @@ function ReportPreview({ formData, onClose, onExport }) {
     {
       title: 'ASTRO VASTU SOLUTION',
       fields: [
-        { key: 'astroVastuRemediesHouse', label: 'Astro Vastu Remedies for House' },
         { key: 'whatToRemove', label: 'What to Remove from Which Directions' },
         { key: 'whatToPlace', label: 'What to Place in Which Directions' },
         { key: 'astroVastuRemediesBody', label: 'Astro Vastu Remedies for Body' },
