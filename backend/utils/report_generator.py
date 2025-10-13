@@ -212,7 +212,11 @@ class ReportGenerator:
 
         # BHRIGUNANDA NADI
         add_section("BHRIGUNANDA NADI", [
+            ('saturnRelation', 'Saturn Relation'),
+            ('saturnFollowing', 'Saturn is following'),
             ('professionalMindset', 'Professional Mindset'),
+            ('venusRelation', 'Venus Relation'),
+            ('venusFollowing', 'Venus is following'),
             ('financialMindset', 'Financial Mindset')
         ])
 
@@ -336,7 +340,11 @@ class ReportGenerator:
 
         # BHRIGUNANDA NADI
         add_section("BHRIGUNANDA NADI", [
+            ('saturnRelation', 'Saturn Relation'),
+            ('saturnFollowing', 'Saturn is following'),
             ('professionalMindset', 'Professional Mindset'),
+            ('venusRelation', 'Venus Relation'),
+            ('venusFollowing', 'Venus is following'),
             ('financialMindset', 'Financial Mindset')
         ])
 
@@ -481,7 +489,11 @@ class ReportGenerator:
 
         # BHRIGUNANDA NADI
         add_section("BHRIGUNANDA NADI", [
+            ('saturnRelation', 'Saturn Relation'),
+            ('saturnFollowing', 'Saturn is following'),
             ('professionalMindset', 'Professional Mindset'),
+            ('venusRelation', 'Venus Relation'),
+            ('venusFollowing', 'Venus is following'),
             ('financialMindset', 'Financial Mindset')
         ])
 

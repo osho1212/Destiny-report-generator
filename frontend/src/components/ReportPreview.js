@@ -137,7 +137,11 @@ function ReportPreview({ formData, onClose, onExport }) {
     {
       title: 'BHRIGUNANDA NADI',
       fields: [
+        { key: 'saturnRelation', label: 'Saturn Relation' },
+        { key: 'saturnFollowing', label: 'Saturn is following' },
         { key: 'professionalMindset', label: 'Professional Mindset' },
+        { key: 'venusRelation', label: 'Venus Relation' },
+        { key: 'venusFollowing', label: 'Venus is following' },
         { key: 'financialMindset', label: 'Financial Mindset' }
       ]
     }

@@ -709,7 +709,45 @@ function ReportForm({ darkTheme }) {
   const [removalItems, setRemovalItems] = useState([{ planet: '', directions: [''] }]);
   const [placementItems, setPlacementItems] = useState([{ planet: '', direction: '' }]);
   const [colorObjectSuggestions, setColorObjectSuggestions] = useState('');
+  const [saturnRelationPlanets, setSaturnRelationPlanets] = useState([{ planet: '', hasBTag: false }]);
+  const [venusRelationPlanets, setVenusRelationPlanets] = useState([{ planet: '', hasBTag: false }]);
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
+
+  // Update Saturn Relation formatted string whenever planets change
+  useEffect(() => {
+    const formattedString = 'SA-' + saturnRelationPlanets
+      .filter(item => {
+        const planet = typeof item === 'string' ? item : item.planet;
+        return planet !== '';
+      })
+      .map(item => {
+        if (typeof item === 'string') {
+          return item;
+        }
+        return item.hasBTag ? `${item.planet}(b)` : item.planet;
+      })
+      .join('-');
+
+    setValue('saturnRelation', formattedString === 'SA-' ? '' : formattedString);
+  }, [saturnRelationPlanets, setValue]);
+
+  // Update Venus Relation formatted string whenever planets change
+  useEffect(() => {
+    const formattedString = 'VE-' + venusRelationPlanets
+      .filter(item => {
+        const planet = typeof item === 'string' ? item : item.planet;
+        return planet !== '';
+      })
+      .map(item => {
+        if (typeof item === 'string') {
+          return item;
+        }
+        return item.hasBTag ? `${item.planet}(b)` : item.planet;
+      })
+      .join('-');
+
+    setValue('venusRelation', formattedString === 'VE-' ? '' : formattedString);
+  }, [venusRelationPlanets, setValue]);
 
   // Watch all dasha source fields for auto-suggestion
   const mahadashaSource = watch('mahadasha_source');
@@ -1286,6 +1324,510 @@ function ReportForm({ darkTheme }) {
 
     setValue('colorObjectsNotToUse', suggestions);
   }, [removalItems, setValue]);
+
+  // Auto-fill ink color based on Laughing Buddha direction
+  useEffect(() => {
+    const laughingBuddhaDir = watch('laughingBuddhaDirection');
+
+    if (!laughingBuddhaDir) {
+      setValue('wishListInkColor', '');
+      return;
+    }
+
+    // Direction to Planet mapping
+    const directionPlanets = {
+      'East': ['Mars'],
+      'North-West': ['Venus'],
+      'North-North-West': ['Mercury'],
+      'North-North-East': ['Moon'],
+      'East-North-East': ['Sun'],
+      'North': ['Mercury'],
+      'West-South-West': ['Venus'],
+      'South-South-West': ['Mars'],
+      'North-East': ['Jupiter'],
+      'South': ['Saturn'],
+      'West': ['Saturn'],
+      'South-East': ['Jupiter']
+    };
+
+    // Planet to colors mapping
+    const planetColors = {
+      'Sun': ['Saffron', 'Golden', 'Red', 'Orange'],
+      'Moon': ['White', 'Light Blue', 'Light Grey', 'Aqua'],
+      'Mars': ['Red', 'Maroon', 'Fiery Red', 'Orange-Red'],
+      'Mercury': ['Green', 'Pale Green'],
+      'Jupiter': ['Yellow', 'Light Yellow', 'Cream', 'Golden'],
+      'Venus': ['Light Pink', 'Orange', 'Peach', 'White'],
+      'Saturn': ['Navy Blue', 'Dark Grey', 'Black', 'Light Grey'],
+      'Rahu': ['Smoky Blue', 'Charcoal', 'Muddy Brown', 'Earthy Brown'],
+      'Ketu': ['Yellow', 'Cream', 'White']
+    };
+
+    const planets = directionPlanets[laughingBuddhaDir] || [];
+    if (planets.length > 0) {
+      const planet = planets[0];
+      const colors = planetColors[planet] || [];
+      const colorSuggestion = colors.slice(0, 2).join(' or ');
+      setValue('wishListInkColor', colorSuggestion);
+    }
+  }, [watch('laughingBuddhaDirection'), setValue, watch]);
+
+  // Auto-generate book recommendations based on Mahadasha and Antardasha planets
+  useEffect(() => {
+    const planetBooks = {
+      'Sun': [
+        'LEADERS EAT LAST BY Simon Sinek',
+        'CORPORATE CHANAKYA IN LEADERSHIP BY Radhakrishnan Pillai',
+        'THE LEADER IN YOU BY Dale Carnegie',
+        '5 LEVELS OF LEADERSHIP BY John C Maxwell',
+        'ATTITUDE IS EVERYTHING BY Jeff Keller',
+        'THE 48 LAWS OF POWER BY Robert Greene'
+      ],
+      'Moon': [
+        'MASTER YOUR EMOTIONS BY Thibaut Meurisse',
+        'EMOTIONAL INTELLIGENCE BY Daniel Goleman',
+        'POWER OF YOUR SUBCONSCIOUS MIND BY Joseph Murphy',
+        'HOW TO STOP WORRYING AND START LIVING BY Dale Carnegie',
+        'THE POWER OF POSITIVE THINKING BY Norman Vincent Peale',
+        'THE HIDDEN MESSAGES IN WATER BY Masaru Emoto'
+      ],
+      'Mars': [
+        'THE ART OF WAR BY Sun Tzu',
+        'ANGER: TAMING A POWERFUL EMOTION BY Gary Chapman',
+        'THE 5 AM CLUB BY Robin Sharma',
+        'CAN\'T HURT ME BY David Goggin',
+        'AWAKEN THE GIANT WITHIN BY Anthony Robbins',
+        'GRIT BY Angela Duckworth'
+      ],
+      'Mercury': [
+        'THE GREATEST SALESMAN IN THE WORLD BY Og Mandino',
+        'HOW TO WIN FRIENDS AND INFLUENCE PEOPLE BY Dale Carnegie',
+        'TALK LIKE TED BY Carmine Gallo',
+        'NEVER EAT ALONE BY Keith Ferrazzi',
+        'HOW TO READ A BOOK BY Mortimer J. Adler',
+        'PUBLIC SPEAKING BY Dale Carnegie'
+      ],
+      'Jupiter': [
+        'THE LUCK PRINCIPLE BY Dr. Richard Wiseman',
+        'THE PROPHET BY Khalil Gibran',
+        'MEDITATIONS BY Marcus Aurelius',
+        'AUTOBIOGRAPHY OF A YOGI BY Paramhansa Yogananda',
+        'THE GEETA',
+        'THE COACHING HABIT BY Michael Bungay Stanier'
+      ],
+      'Venus': [
+        'PSYCHOLOGY OF MONEY BY Morgan Housel',
+        'THINK AND GROW RICH BY Napoleon Hill',
+        'THE GOOD LIFE BY Robert Waldinger',
+        'SECRETS OF THE MILLIONAIRE MIND BY T. Harv Eker'
+      ],
+      'Saturn': [
+        'HYPER FOCUS BY Chris Bailey',
+        'THE 80/20 PRINCIPLE BY Richard Koch',
+        'HOMO SAPIENS BY Yuval Noah Harari',
+        'THE ONE THING BY Gary Keller',
+        'THE POWER OF HABITS BY Charles Duhigg',
+        'ATOMIC HABITS BY James Clear',
+        'DEEP WORK BY Cal Newport'
+      ],
+      'Rahu': [
+        'EVERYBODY LIES BY Seth Stephens',
+        'INSTANT INFLUENCE AND CHARISMA BY Paul McKenna',
+        'ILLUSIONS BY Richard Bach',
+        'THE MAGIC OF THINKING BIG BY David Schwartz',
+        '500 SOCIAL MEDIA MARKETING TIPS BY Andrew Macarthy'
+      ],
+      'Ketu': [
+        'LETTING GO BY David R. Hawkins',
+        'BOOK OF SECRETS BY Osho',
+        'MEDITATION - FIRST AND LAST FREEDOM BY Osho',
+        'THE POWER OF NOW BY Eckhart Tolle',
+        'A COMPLAINT FREE WORLD BY Will Bowen',
+        'THE SECRET POWER BY Dr. Joe Vitale'
+      ]
+    };
+
+    // Get planets from Mahadasha and Antardasha (first planets, not NL)
+    const mahadashaPlanet = watch('mahadasha_planet');
+    const antardashaPlanet = watch('antardasha_planet');
+
+    const selectedPlanets = [];
+    if (mahadashaPlanet) selectedPlanets.push(mahadashaPlanet);
+    if (antardashaPlanet && antardashaPlanet !== mahadashaPlanet) {
+      selectedPlanets.push(antardashaPlanet);
+    }
+
+    if (selectedPlanets.length === 0) {
+      setValue('importantBooks', '');
+      return;
+    }
+
+    // Generate book recommendations for each planet
+    const bookRecommendations = [];
+    selectedPlanets.forEach(planet => {
+      const books = planetBooks[planet] || [];
+      if (books.length > 0) {
+        bookRecommendations.push(`${planet}:`);
+        books.slice(0, 3).forEach(book => {
+          bookRecommendations.push(`• ${book}`);
+        });
+      }
+    });
+
+    setValue('importantBooks', bookRecommendations.join('\n'));
+  }, [watch('mahadasha_planet'), watch('antardasha_planet'), setValue, watch]);
+
+  // Auto-generate gift recommendations for Gifts to Give
+  useEffect(() => {
+    const planetGifts = {
+      'Sun': [
+        'Orange colour things',
+        'Gold items',
+        'Ashoka pillar',
+        'Any government symbol',
+        'Sun statues or murals'
+      ],
+      'Moon': [
+        'White colour things',
+        'Silver items',
+        'Pearl jewellery',
+        'Dairy products',
+        'Mother Mary statues',
+        'Ma Saraswati statues'
+      ],
+      'Mars': [
+        'Red colour things',
+        'Knife',
+        'Swords',
+        'Weapons miniatures',
+        'Swiss knife'
+      ],
+      'Mercury': [
+        'Green colour things',
+        'Speakers set of 2',
+        'Books',
+        'Green plants',
+        'Green scenery'
+      ],
+      'Jupiter': [
+        'Yellow colour things',
+        'Brass decorative items',
+        'God pictures or statues',
+        'Gold items',
+        'Kesar',
+        'Religious books',
+        'Buddha statues or posters'
+      ],
+      'Venus': [
+        'Diamonds',
+        'Platinum',
+        'Cream colour flowers',
+        'Branded perfumes',
+        'Anything of very exclusive brand',
+        'Make-up items',
+        'Beautiful flowers'
+      ],
+      'Saturn': [
+        'Black colour things',
+        'Iron show pieces',
+        'Black shoes',
+        'Binoculars',
+        'Telescope'
+      ],
+      'Rahu': [
+        'Buddha head',
+        'Wine bottles',
+        'Exclusive tea or coffee hampers',
+        'Black elephant statue or miniature or pictures',
+        'Grey colour things'
+      ],
+      'Ketu': [
+        'Ganesha ji idols or posters',
+        'Chess',
+        'Black and white blankets/kurta'
+      ]
+    };
+
+    const selectedPlanet = watch('giftsToGivePlanet');
+
+    if (!selectedPlanet) {
+      setValue('giftsToGive', '');
+      return;
+    }
+
+    const gifts = planetGifts[selectedPlanet] || [];
+    if (gifts.length > 0) {
+      const giftText = gifts.map(gift => `• ${gift}`).join('\n');
+      setValue('giftsToGive', giftText);
+    } else {
+      setValue('giftsToGive', '');
+    }
+  }, [watch('giftsToGivePlanet'), setValue, watch]);
+
+  // Auto-generate Professional Mindset based on Saturn following
+  useEffect(() => {
+    const saturnFollowingPlanet = watch('saturnFollowing');
+
+    const saturnRelationNotes = {
+      'Jupiter': `1. Good combination if no malefic conjoin
+2. Native enjoy a divine grace in their profession.
+3. They should always seek blessings from their Guru/Guides.
+4. They can themselves become great Gurus, successful trainers, life coaches.
+5. He can be teacher, in bank job, advisor, counsellor.`,
+
+      'Sun': `1. It may create disturbances in native's professional life because of native's ego.
+2. May face ego clashes with their colleagues or boss. Often end up with multiple enemies due to their headstrong nature.
+3. They may enter their family business or work with their family in any chosen area.
+4. They should always maintain cordial relations with their father and family/Sun significance(Boss, government officials)
+5. They can associate with government.
+6. He will have desire of fame in profession.
+7. Father-son will have issues.
+8. Leg pain either self or father.
+9. Chacha,Tau, Elder brother can be in government job.
+10. Chacha,Tau, Elder brother will have ego, attitude and anger.
+11. If its not government job, he will have lots of problems in the job.`,
+
+      'Moon': `1. A fickle minded approach towards one's career. Frequent changes in the profession.
+2. Sheer lack of emotional support.
+3. Attain professional success far away from their birth place.
+4. More travel will give better professional success.
+5. Can be good astrologer/psychological counselling.
+6. Sa:Mo is Vish Yoga. Person should do puja of Ardh-Narishwar.
+7. Can do food/travelling/dairy related work.
+8. Water will keep on dripping from one tap in home.
+9. Can't take decisions easily.
+10. Will have to pass through depression for sure.
+11. Mother will have pain in legs.
+12. Chacha, Tau, elder brother will be emotional, travel a lot and do change of place.
+13. Should throw out wet clothes from bathroom immediately after the bath.`,
+
+      'Mars': `1. Native may take impulsive decisions in life and end up regretting them later.
+2. May face problems in profession due to negative people and betrayals.
+3. May achieve great success in technical field, Defence, Army, Vastu consultant.
+4. Should sleep on floor for 43 days if facing any work related issues.
+5. Being physically active like jogging or gymming can benefit in professional success.
+6. Work related to land, real estate, tantric, engineer, factory, police, surgeon, butcher.
+7. Career will be set using Mantra sadhna.
+8. Walk barefoot on grass.
+9. Can be a factory owner.
+10. Gives too much property.
+11. Can be builder, coloniser.`,
+
+      'Rahu': `1. Native is always feeling insecure regarding profession.
+2. This only about career expansion.
+3. This combination may trigger sudden troubles or unexpected changes in the career.
+4. Possibility of career in an unorthodox/non-traditional career, secret service, Bollywood, film industry, technology, foreign related work.
+5. May excel in foreign or sectors like cinema and film industry.
+6. Working online or establishing themselves over the social media channels such as Facebook, Instagram and YouTube.
+7. Native work can be of repetitive nature like photocopy machine because Rahu is repetitive work.`,
+
+      'Mercury': `1. It may take longer than expected to learn new concepts as Saturn is slow and steady planet. But maybe quick in grasping subjects that Saturn represent.
+2. Native prefer owning a business over pursuing a job.
+3. Accounting, commissioning, education, teacher, writer and trade are the sectors favourable for these natives.
+4. They are excellent persuaders and can become extraordinary salespeople.
+5. Career stream should be related to the education you received
+6. More you read, more your profession will grow.
+7. Education can be in psychology, philosophy, mining, history and political science.`,
+
+      'Ketu': `1. Native may feel a detachment from their profession, shows loss of consistency.
+2. Good professional options are Yoga, Medical, doctor, surgeon, pundit, chemical, Law and Consultancy, Research and development, Astrology.
+3. Native may sense an invisible force guiding them all along in their careers.
+4. Karma of these natives can help them attain salvation.
+5. Problems and hurdles in profession.
+6. Native can have 3 houses, can live in third floor or his house can have 3 floors. Can have corner house.`,
+
+      'Venus': `1. This conjunction gives lot of wealth to the profession.
+2. There will be an increase in wealth and prosperity after marriage.
+3. Professional options are related to finance, computer, ladies items, beauty, art, luxury and vehicle.
+4. Once in a life, native is going to have a powerful influence in society and chosen career field.
+5. If Venus degree is more than Saturn, work will be less but money is more. If Saturn degree is more than Venus degree, work will be too much but money is less.`
+    };
+
+    if (saturnFollowingPlanet && saturnRelationNotes[saturnFollowingPlanet]) {
+      setValue('professionalMindset', saturnRelationNotes[saturnFollowingPlanet]);
+    } else {
+      setValue('professionalMindset', '');
+    }
+  }, [watch('saturnFollowing'), setValue, watch]);
+
+  // Auto-generate Financial Mindset based on Venus following
+  useEffect(() => {
+    const venusFollowingPlanet = watch('venusFollowing');
+
+    const venusRelationNotes = {
+      'Sun': `1. Native should avoid physical intimacy in the daytime, can give incurable disease.
+2. Native can receive wealth from father/government.
+3. Native may offer sweets made from flour to make this combination useful.
+4. Father will be wealthy.
+5. There can be conflict between wife and father-in-law.
+6. Father will be wealthy.
+7. Fame through wealth.
+8. Wife can be in government job.
+9. Wife will have ego attitude and anger.
+10. Wife will come from a good/famous family.
+11. Wife and father-in-law will have troubles.`,
+
+      'Moon': `1. These natives should stay away from their mothers to ensure optimum marital bliss.
+2. If money is stuck, start travelling.
+3. Native likes the presentation and garnishes over the food.
+4. Should donate good food to attract an influx of wealth.
+5. To maintain the harmony between mother and wife, donate a mixture of raw cow milk and homemade butter in a steel pot to a temple.
+6. Can receive wealth from mother.
+7. Wife and mother-in-law will have troubles.
+8. Mother will be wealthy.
+9. Wife will be emotional, do travel and can do change of place.`,
+
+      'Mars': `1. Can invest in real estate or lands to use better this combination.
+2. Stay physically active and money will keep on flowing.
+3. The spouses of the male natives often struggle with their health and temper.
+4. Younger brothers of these natives may prosper after marriage.
+5. Last birth husband-wife.
+6. Husband and younger brother will be wealthy.
+7. Native is very romantic.`,
+
+      'Rahu': `1. These natives should prefer earning their livelihood away from their native place.
+2. Spouse may be unpredictable, may even lead to infidelity.
+3. These natives should use luxury goods depending on their bank balance and affordability.
+4. Can receive money from foreign.
+5. Wife can be ill.
+6. Wife can go to foreign, politics or jail.
+7. Dada ji will be wealthy.`,
+
+      'Jupiter': `1. Native should always respect their tutors, teachers, guides and gurus to uplift their wealth.
+2. Unnecessarily criticising or hurling verbal abuses at the teachers may lead to loss of wealth.
+3. Make sure your faith in spiritual practices is not deviated.
+4. Wife will be religious, counsellor, loves food and sleep.
+5. Native will have house.
+6. Native will be wealthy.`,
+
+      'Saturn': `1. Native can get massive wealth through their profession.
+2. Native should treat their subordinates and employees with the utmost respect.
+3. They should behave in an orderly manner and with optimum discipline.
+4. Staying active with a managed schedule can bring wealth and satisfaction.
+5. Wife can be sad and lazy, dark complexion, older.
+6. Old house
+7. Late marriage
+8. Dhan-yog, millionaire`,
+
+      'Mercury': `1. They should indulge in meaningful communications.
+2. They should write journal daily.
+3. Journeys over short distance, trading, and consistent learning can bring them wealth.
+4. More you will read, more money will flow.
+5. Wife would be intelligent.
+6. Sister/daughter would be wealthy
+7. Can do education in beauty parlour, interior fashion designing, biology, textile engineering, software engineering, computer engineering.
+8. Krishna Bhagwan
+9. vishnu-Laxmi yog, native will be millionaire, wealthy.
+10. Can have 2 wives.
+11. Sister, mama will be wealthy
+12. Wife can do business.`,
+
+      'Ketu': `1. More the wealth, more the native loses interest in worldly matters. Ke only provide when you do not think about it. So remove focus from wealth.
+2. They should start treating wealth as a matter of secondary significance.
+3. Their lifestyle should be simple and devoid of a show-off.
+4. These natives may perform financially well with little or no regard for the overall financial profits.
+5. If money is blocked, surrender 100 percent, only then you will get the money or do gardening.
+6. Native can receive wealth from dead person/can find secret treasure.
+7. Gains from agriculture because Ketu is roots.
+8. Temple near the wife's house.
+9. Wife can be spiritual, religious.
+10. Wife can have defect in legs, piles.
+11. Mama-bhania, nana, saala will be wealthy.`
+    };
+
+    if (venusFollowingPlanet && venusRelationNotes[venusFollowingPlanet]) {
+      setValue('financialMindset', venusRelationNotes[venusFollowingPlanet]);
+    } else {
+      setValue('financialMindset', '');
+    }
+  }, [watch('venusFollowing'), setValue, watch]);
+
+  // Auto-generate gift recommendations for Gifts to Receive
+  useEffect(() => {
+    const planetGifts = {
+      'Sun': [
+        'Orange colour things',
+        'Gold items',
+        'Ashoka pillar',
+        'Any government symbol',
+        'Sun statues or murals'
+      ],
+      'Moon': [
+        'White colour things',
+        'Silver items',
+        'Pearl jewellery',
+        'Dairy products',
+        'Mother Mary statues',
+        'Ma Saraswati statues'
+      ],
+      'Mars': [
+        'Red colour things',
+        'Knife',
+        'Swords',
+        'Weapons miniatures',
+        'Swiss knife'
+      ],
+      'Mercury': [
+        'Green colour things',
+        'Speakers set of 2',
+        'Books',
+        'Green plants',
+        'Green scenery'
+      ],
+      'Jupiter': [
+        'Yellow colour things',
+        'Brass decorative items',
+        'God pictures or statues',
+        'Gold items',
+        'Kesar',
+        'Religious books',
+        'Buddha statues or posters'
+      ],
+      'Venus': [
+        'Diamonds',
+        'Platinum',
+        'Cream colour flowers',
+        'Branded perfumes',
+        'Anything of very exclusive brand',
+        'Make-up items',
+        'Beautiful flowers'
+      ],
+      'Saturn': [
+        'Black colour things',
+        'Iron show pieces',
+        'Black shoes',
+        'Binoculars',
+        'Telescope'
+      ],
+      'Rahu': [
+        'Buddha head',
+        'Wine bottles',
+        'Exclusive tea or coffee hampers',
+        'Black elephant statue or miniature or pictures',
+        'Grey colour things'
+      ],
+      'Ketu': [
+        'Ganesha ji idols or posters',
+        'Chess',
+        'Black and white blankets/kurta'
+      ]
+    };
+
+    const selectedPlanet = watch('giftsToReceivePlanet');
+
+    if (!selectedPlanet) {
+      setValue('giftsToReceive', '');
+      return;
+    }
+
+    const gifts = planetGifts[selectedPlanet] || [];
+    if (gifts.length > 0) {
+      const giftText = gifts.map(gift => `• ${gift}`).join('\n');
+      setValue('giftsToReceive', giftText);
+    } else {
+      setValue('giftsToReceive', '');
+    }
+  }, [watch('giftsToReceivePlanet'), setValue, watch]);
 
   const onPreview = (data) => {
     // Format aspectsOnHouses: "Venus hits Houses 1st and 3rd at 90° and 5th at 180°"
@@ -2009,22 +2551,46 @@ function ReportForm({ darkTheme }) {
 
           <div className="form-group">
             <label htmlFor="lockerLocation">Most Favorable Location of Locker</label>
-            <input
+            <select
               id="lockerLocation"
-              type="text"
               {...register('lockerLocation')}
-              placeholder="Best locker placement for wealth"
-            />
+            >
+              <option value="">Select Direction</option>
+              <option value="East">East (Aries)</option>
+              <option value="North-West">North-West (Taurus)</option>
+              <option value="North-North-West">North-North-West (Gemini)</option>
+              <option value="North-North-East">North-North-East (Cancer)</option>
+              <option value="East-North-East">East-North-East (Leo)</option>
+              <option value="North">North (Virgo)</option>
+              <option value="West-South-West">West-South-West (Libra)</option>
+              <option value="South-South-West">South-South-West (Scorpio)</option>
+              <option value="North-East">North-East (Sagittarius)</option>
+              <option value="South">South (Capricorn)</option>
+              <option value="West">West (Aquarius)</option>
+              <option value="South-East">South-East (Pisces)</option>
+            </select>
           </div>
 
           <div className="form-group">
             <label htmlFor="laughingBuddhaDirection">Placement of Laughing Buddha/Vision Board - Direction</label>
-            <input
+            <select
               id="laughingBuddhaDirection"
-              type="text"
               {...register('laughingBuddhaDirection')}
-              placeholder="Direction for placement"
-            />
+            >
+              <option value="">Select Direction</option>
+              <option value="East">East (Aries)</option>
+              <option value="North-West">North-West (Taurus)</option>
+              <option value="North-North-West">North-North-West (Gemini)</option>
+              <option value="North-North-East">North-North-East (Cancer)</option>
+              <option value="East-North-East">East-North-East (Leo)</option>
+              <option value="North">North (Virgo)</option>
+              <option value="West-South-West">West-South-West (Libra)</option>
+              <option value="South-South-West">South-South-West (Scorpio)</option>
+              <option value="North-East">North-East (Sagittarius)</option>
+              <option value="South">South (Capricorn)</option>
+              <option value="West">West (Aquarius)</option>
+              <option value="South-East">South-East (Pisces)</option>
+            </select>
           </div>
 
           <div className="form-group">
@@ -2413,32 +2979,73 @@ function ReportForm({ darkTheme }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="importantBooks">Important Books to Read to Uplift Your Life</label>
+            <label htmlFor="importantBooks">Important Books to Read to Uplift Your Life (Auto-generated from Mahadasha & Antardasha)</label>
             <textarea
               id="importantBooks"
               {...register('importantBooks')}
-              placeholder="Recommended books"
-              rows="3"
+              placeholder="Select Mahadasha and Antardasha planets above..."
+              rows="8"
+              style={{ resize: 'vertical' }}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="giftsToGive">Gifts - To Give</label>
-            <input
+            <label htmlFor="giftsToGivePlanet">Gifts - To Give - Select Planet</label>
+            <select
+              id="giftsToGivePlanet"
+              {...register('giftsToGivePlanet')}
+            >
+              <option value="">Select Planet</option>
+              <option value="Sun">Sun</option>
+              <option value="Moon">Moon</option>
+              <option value="Mars">Mars</option>
+              <option value="Mercury">Mercury</option>
+              <option value="Jupiter">Jupiter</option>
+              <option value="Venus">Venus</option>
+              <option value="Saturn">Saturn</option>
+              <option value="Rahu">Rahu</option>
+              <option value="Ketu">Ketu</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="giftsToGive">Gifts - To Give (Auto-generated)</label>
+            <textarea
               id="giftsToGive"
-              type="text"
               {...register('giftsToGive')}
-              placeholder="Gifts you should give"
+              placeholder="Select planet above..."
+              rows="5"
+              style={{ resize: 'vertical' }}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="giftsToReceive">Gifts - To Receive</label>
-            <input
+            <label htmlFor="giftsToReceivePlanet">Gifts - To Receive - Select Planet</label>
+            <select
+              id="giftsToReceivePlanet"
+              {...register('giftsToReceivePlanet')}
+            >
+              <option value="">Select Planet</option>
+              <option value="Sun">Sun</option>
+              <option value="Moon">Moon</option>
+              <option value="Mars">Mars</option>
+              <option value="Mercury">Mercury</option>
+              <option value="Jupiter">Jupiter</option>
+              <option value="Venus">Venus</option>
+              <option value="Saturn">Saturn</option>
+              <option value="Rahu">Rahu</option>
+              <option value="Ketu">Ketu</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="giftsToReceive">Gifts - To Receive (Auto-generated)</label>
+            <textarea
               id="giftsToReceive"
-              type="text"
               {...register('giftsToReceive')}
-              placeholder="Gifts you should receive"
+              placeholder="Select planet above..."
+              rows="5"
+              style={{ resize: 'vertical' }}
             />
           </div>
         </div>
@@ -2448,6 +3055,128 @@ function ReportForm({ darkTheme }) {
           <h2>Bhrigunanda Nadi</h2>
 
           <div className="form-group">
+            <label>Saturn Relation</label>
+            <input type="hidden" {...register('saturnRelation')} />
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '5px' }}>
+              <span style={{ fontWeight: 'bold' }}>SA</span>
+              {saturnRelationPlanets.map((item, index) => {
+                // Normalize item to object format (handle legacy string format)
+                const normalizedItem = typeof item === 'string'
+                  ? { planet: item, hasBTag: false }
+                  : item;
+
+                return (
+                  <React.Fragment key={index}>
+                    <span style={{ fontWeight: 'bold' }}>-</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <select
+                        value={normalizedItem.planet}
+                        onChange={(e) => {
+                          const newPlanets = [...saturnRelationPlanets].map((p, i) => {
+                            if (i === index) {
+                              return { planet: e.target.value, hasBTag: normalizedItem.hasBTag };
+                            }
+                            return typeof p === 'string' ? { planet: p, hasBTag: false } : p;
+                          });
+                          setSaturnRelationPlanets(newPlanets);
+                        }}
+                        style={{ width: '80px', padding: '2px' }}
+                      >
+                        <option value="">+</option>
+                        <option value="SU">SU</option>
+                        <option value="MO">MO</option>
+                        <option value="MA">MA</option>
+                        <option value="ME">ME</option>
+                        <option value="JU">JU</option>
+                        <option value="VE">VE</option>
+                        <option value="SA">SA</option>
+                        <option value="RA">RA</option>
+                        <option value="KE">KE</option>
+                      </select>
+                      {normalizedItem.planet && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '12px' }}>
+                          <input
+                            type="checkbox"
+                            checked={normalizedItem.hasBTag}
+                            onChange={(e) => {
+                              const newPlanets = [...saturnRelationPlanets].map((p, i) => {
+                                if (i === index) {
+                                  return { planet: normalizedItem.planet, hasBTag: e.target.checked };
+                                }
+                                return typeof p === 'string' ? { planet: p, hasBTag: false } : p;
+                              });
+                              setSaturnRelationPlanets(newPlanets);
+                            }}
+                          />
+                          (b)
+                        </label>
+                      )}
+                    </div>
+                    {index === saturnRelationPlanets.length - 1 && normalizedItem.planet && (
+                      <button
+                        type="button"
+                        onClick={() => setSaturnRelationPlanets([...saturnRelationPlanets, { planet: '', hasBTag: false }])}
+                        style={{
+                          padding: '2px 8px',
+                          cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontWeight: 'bold',
+                          marginLeft: '5px'
+                        }}
+                      >
+                        +
+                      </button>
+                    )}
+                    {saturnRelationPlanets.length > 1 && index !== saturnRelationPlanets.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newPlanets = saturnRelationPlanets.filter((_, i) => i !== index);
+                          setSaturnRelationPlanets(newPlanets.length ? newPlanets : [{ planet: '', hasBTag: false }]);
+                        }}
+                        style={{
+                          padding: '2px 8px',
+                          cursor: 'pointer',
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontWeight: 'bold',
+                          marginLeft: '5px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="saturnFollowing">Saturn is following</label>
+            <select
+              id="saturnFollowing"
+              {...register('saturnFollowing')}
+            >
+              <option value="">Select Planet</option>
+              <option value="Sun">Sun</option>
+              <option value="Moon">Moon</option>
+              <option value="Mars">Mars</option>
+              <option value="Mercury">Mercury</option>
+              <option value="Jupiter">Jupiter</option>
+              <option value="Venus">Venus</option>
+              <option value="Saturn">Saturn</option>
+              <option value="Rahu">Rahu</option>
+              <option value="Ketu">Ketu</option>
+            </select>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="professionalMindset">Professional Mindset</label>
             <textarea
               id="professionalMindset"
@@ -2455,6 +3184,128 @@ function ReportForm({ darkTheme }) {
               placeholder="Professional mindset insights"
               rows="4"
             />
+          </div>
+
+          <div className="form-group">
+            <label>Venus Relation</label>
+            <input type="hidden" {...register('venusRelation')} />
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '5px' }}>
+              <span style={{ fontWeight: 'bold' }}>VE</span>
+              {venusRelationPlanets.map((item, index) => {
+                // Normalize item to object format (handle legacy string format)
+                const normalizedItem = typeof item === 'string'
+                  ? { planet: item, hasBTag: false }
+                  : item;
+
+                return (
+                  <React.Fragment key={index}>
+                    <span style={{ fontWeight: 'bold' }}>-</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <select
+                        value={normalizedItem.planet}
+                        onChange={(e) => {
+                          const newPlanets = [...venusRelationPlanets].map((p, i) => {
+                            if (i === index) {
+                              return { planet: e.target.value, hasBTag: normalizedItem.hasBTag };
+                            }
+                            return typeof p === 'string' ? { planet: p, hasBTag: false } : p;
+                          });
+                          setVenusRelationPlanets(newPlanets);
+                        }}
+                        style={{ width: '80px', padding: '2px' }}
+                      >
+                        <option value="">+</option>
+                        <option value="SU">SU</option>
+                        <option value="MO">MO</option>
+                        <option value="MA">MA</option>
+                        <option value="ME">ME</option>
+                        <option value="JU">JU</option>
+                        <option value="VE">VE</option>
+                        <option value="SA">SA</option>
+                        <option value="RA">RA</option>
+                        <option value="KE">KE</option>
+                      </select>
+                      {normalizedItem.planet && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '12px' }}>
+                          <input
+                            type="checkbox"
+                            checked={normalizedItem.hasBTag}
+                            onChange={(e) => {
+                              const newPlanets = [...venusRelationPlanets].map((p, i) => {
+                                if (i === index) {
+                                  return { planet: normalizedItem.planet, hasBTag: e.target.checked };
+                                }
+                                return typeof p === 'string' ? { planet: p, hasBTag: false } : p;
+                              });
+                              setVenusRelationPlanets(newPlanets);
+                            }}
+                          />
+                          (b)
+                        </label>
+                      )}
+                    </div>
+                    {index === venusRelationPlanets.length - 1 && normalizedItem.planet && (
+                      <button
+                        type="button"
+                        onClick={() => setVenusRelationPlanets([...venusRelationPlanets, { planet: '', hasBTag: false }])}
+                        style={{
+                          padding: '2px 8px',
+                          cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontWeight: 'bold',
+                          marginLeft: '5px'
+                        }}
+                      >
+                        +
+                      </button>
+                    )}
+                    {venusRelationPlanets.length > 1 && index !== venusRelationPlanets.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newPlanets = venusRelationPlanets.filter((_, i) => i !== index);
+                          setVenusRelationPlanets(newPlanets.length ? newPlanets : [{ planet: '', hasBTag: false }]);
+                        }}
+                        style={{
+                          padding: '2px 8px',
+                          cursor: 'pointer',
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontWeight: 'bold',
+                          marginLeft: '5px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="venusFollowing">Venus is following</label>
+            <select
+              id="venusFollowing"
+              {...register('venusFollowing')}
+            >
+              <option value="">Select Planet</option>
+              <option value="Sun">Sun</option>
+              <option value="Moon">Moon</option>
+              <option value="Mars">Mars</option>
+              <option value="Mercury">Mercury</option>
+              <option value="Jupiter">Jupiter</option>
+              <option value="Venus">Venus</option>
+              <option value="Saturn">Saturn</option>
+              <option value="Rahu">Rahu</option>
+              <option value="Ketu">Ketu</option>
+            </select>
           </div>
 
           <div className="form-group">
