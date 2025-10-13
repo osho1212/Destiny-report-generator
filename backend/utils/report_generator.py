@@ -1,10 +1,13 @@
 from docx import Document
-from docx.shared import Inches, Pt
+from docx.shared import Inches, Pt, RGBColor
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from reportlab.graphics.shapes import Drawing, Line
 from openpyxl import Workbook
 from jinja2 import Template
 from datetime import datetime
@@ -102,12 +105,12 @@ class ReportGenerator:
             textColor=colors.HexColor('#2c3e50'),
             spaceAfter=20,
             alignment=1,
-            fontName='Helvetica-Bold'
+            fontName='Times-Bold'
         )
         story.append(Paragraph("DESTINY REPORT", title_style))
         story.append(Spacer(1, 0.4*inch))
 
-        # Section Title Style - orange color matching preview
+        # Section Title Style - orange color matching preview, Times New Roman
         section_style = ParagraphStyle(
             'SectionTitle',
             parent=styles['Heading2'],
@@ -115,15 +118,16 @@ class ReportGenerator:
             textColor=colors.HexColor('#ff8c00'),
             spaceBefore=20,
             spaceAfter=12,
-            fontName='Helvetica-Bold'
+            fontName='Times-Bold'
         )
 
-        # Field Style
+        # Field Style - Times New Roman
         field_style = ParagraphStyle(
             'FieldStyle',
             parent=styles['Normal'],
             fontSize=11,
-            spaceAfter=8
+            spaceAfter=8,
+            fontName='Times-Roman'
         )
 
         # Helper function to add section (only if it has content)
@@ -135,7 +139,16 @@ class ReportGenerator:
                 return  # Skip empty sections
 
             story.append(Paragraph(title, section_style))
+
+            # Add orange separation line under section title
+            d = Drawing(6.5*inch, 2)
+            line = Line(0, 1, 6.5*inch, 1)
+            line.strokeColor = colors.HexColor('#ff8c00')
+            line.strokeWidth = 2
+            d.add(line)
+            story.append(d)
             story.append(Spacer(1, 0.1*inch))
+
             for field_key, field_label in fields:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
@@ -178,6 +191,14 @@ class ReportGenerator:
 
         if has_astrology_content:
             story.append(Paragraph("ASTROLOGY", section_style))
+
+            # Add orange separation line under section title
+            d = Drawing(6.5*inch, 2)
+            line = Line(0, 1, 6.5*inch, 1)
+            line.strokeColor = colors.HexColor('#ff8c00')
+            line.strokeWidth = 2
+            d.add(line)
+            story.append(d)
             story.append(Spacer(1, 0.1*inch))
 
             # Add Mahadasha
@@ -305,26 +326,58 @@ class ReportGenerator:
         # Create document
         doc = Document()
 
-        # Add main title
+        # Add main title with Times New Roman
         title = doc.add_heading('DESTINY REPORT', 0)
         title.alignment = 1  # Center
+        for run in title.runs:
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(28)
         doc.add_paragraph()
 
+        # Helper function to add orange border line
+        def add_orange_line():
+            p = doc.add_paragraph()
+            pPr = p._element.get_or_add_pPr()
+            pBdr = OxmlElement('w:pBdr')
+            bottom = OxmlElement('w:bottom')
+            bottom.set(qn('w:val'), 'single')
+            bottom.set(qn('w:sz'), '12')  # 12/8 = 1.5pt line thickness
+            bottom.set(qn('w:space'), '1')
+            bottom.set(qn('w:color'), 'FF8C00')  # Orange color
+            pBdr.append(bottom)
+            pPr.append(pBdr)
+
         # Helper function to add section (only if it has content)
-        def add_section(title, fields):
+        def add_section(title_text, fields):
             # Check if any field has a value
             has_content = any(self.sanitize_input(form_data.get(field_key, '')) for field_key, _ in fields)
 
             if not has_content:
                 return  # Skip empty sections
 
-            doc.add_heading(title, level=1)
+            # Add section heading with Times New Roman and orange color
+            heading = doc.add_heading(title_text, level=1)
+            for run in heading.runs:
+                run.font.name = 'Times New Roman'
+                run.font.size = Pt(18)
+                run.font.color.rgb = RGBColor(255, 140, 0)  # Orange color
+
+            # Add orange separation line
+            add_orange_line()
+
             for field_key, field_label in fields:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
                     p = doc.add_paragraph()
-                    p.add_run(f'{field_label}: ').bold = True
-                    p.add_run(str(value))
+                    # Bold label with Times New Roman
+                    label_run = p.add_run(f'{field_label}: ')
+                    label_run.bold = True
+                    label_run.font.name = 'Times New Roman'
+                    label_run.font.size = Pt(11)
+                    # Value with Times New Roman
+                    value_run = p.add_run(str(value))
+                    value_run.font.name = 'Times New Roman'
+                    value_run.font.size = Pt(11)
             doc.add_paragraph()
 
         # ABOUT THE CLIENT
@@ -361,25 +414,48 @@ class ReportGenerator:
         )
 
         if has_astrology_content:
-            doc.add_heading("ASTROLOGY", level=1)
+            # Add section heading with Times New Roman and orange color
+            heading = doc.add_heading("ASTROLOGY", level=1)
+            for run in heading.runs:
+                run.font.name = 'Times New Roman'
+                run.font.size = Pt(18)
+                run.font.color.rgb = RGBColor(255, 140, 0)  # Orange color
+
+            # Add orange separation line
+            add_orange_line()
 
             # Add Mahadasha
             if mahadasha:
                 p = doc.add_paragraph()
-                p.add_run('Mahadasha: ').bold = True
-                p.add_run(mahadasha)
+                label_run = p.add_run('Mahadasha: ')
+                label_run.bold = True
+                label_run.font.name = 'Times New Roman'
+                label_run.font.size = Pt(11)
+                value_run = p.add_run(mahadasha)
+                value_run.font.name = 'Times New Roman'
+                value_run.font.size = Pt(11)
 
             # Add Antardasha
             if antardasha:
                 p = doc.add_paragraph()
-                p.add_run('Antardasha: ').bold = True
-                p.add_run(antardasha)
+                label_run = p.add_run('Antardasha: ')
+                label_run.bold = True
+                label_run.font.name = 'Times New Roman'
+                label_run.font.size = Pt(11)
+                value_run = p.add_run(antardasha)
+                value_run.font.name = 'Times New Roman'
+                value_run.font.size = Pt(11)
 
             # Add Pratyantardasha
             if pratyantardasha:
                 p = doc.add_paragraph()
-                p.add_run('Pratyantar Dasha: ').bold = True
-                p.add_run(pratyantardasha)
+                label_run = p.add_run('Pratyantar Dasha: ')
+                label_run.bold = True
+                label_run.font.name = 'Times New Roman'
+                label_run.font.size = Pt(11)
+                value_run = p.add_run(pratyantardasha)
+                value_run.font.name = 'Times New Roman'
+                value_run.font.size = Pt(11)
 
             # Add other astrology fields
             for field_key, field_label in [
@@ -398,8 +474,13 @@ class ReportGenerator:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
                     p = doc.add_paragraph()
-                    p.add_run(f'{field_label}: ').bold = True
-                    p.add_run(str(value))
+                    label_run = p.add_run(f'{field_label}: ')
+                    label_run.bold = True
+                    label_run.font.name = 'Times New Roman'
+                    label_run.font.size = Pt(11)
+                    value_run = p.add_run(str(value))
+                    value_run.font.name = 'Times New Roman'
+                    value_run.font.size = Pt(11)
 
             doc.add_paragraph()
 
