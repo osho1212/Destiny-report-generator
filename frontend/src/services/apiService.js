@@ -21,11 +21,12 @@ const apiService = {
   },
 
   // Generate report
-  async generateReport(reportType, formData) {
+  async generateReport(reportType, formData, customFilename = null) {
     try {
       const response = await apiClient.post('/generate-report', {
         reportType,
         formData,
+        filename: customFilename,
       }, {
         responseType: 'blob', // Important for file download
       });
@@ -35,9 +36,12 @@ const apiService = {
       const link = document.createElement('a');
       link.href = url;
 
-      // Set filename based on report type
+      // Set filename based on custom name or default
       const extension = reportType === 'pdf' ? 'pdf' : reportType === 'docx' ? 'docx' : 'xlsx';
-      link.setAttribute('download', `report_${Date.now()}.${extension}`);
+      const filename = customFilename
+        ? `${customFilename}.${extension}`
+        : `report_${Date.now()}.${extension}`;
+      link.setAttribute('download', filename);
 
       // Trigger download
       document.body.appendChild(link);

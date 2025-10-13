@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ShinyText from './ShinyText';
 import './ReportPreview.css';
 
 function ReportPreview({ formData, onClose, onExport }) {
+  const [filename, setFilename] = useState('Destiny_Report');
   // Helper function to format dasha data
   // Format: Planet(Source), NL(NL Source), (Additional house), SL(SL source)
   const formatDasha = (prefix) => {
@@ -85,7 +86,6 @@ function ReportPreview({ formData, onClose, onExport }) {
       title: 'VASTU ANALYSIS',
       fields: [
         { key: 'mapOfHouse', label: 'Map of the House' },
-        { key: 'vastuAnalysis', label: 'Analysis (Entrances, Kitchen, Washrooms)' },
         { key: 'vastuRemedies', label: 'Remedies' }
       ]
     },
@@ -158,26 +158,128 @@ function ReportPreview({ formData, onClose, onExport }) {
         <div className="preview-content">
           <div className="preview-title">DESTINY REPORT</div>
 
-          {sections.map((section, idx) => (
-            <div key={idx} className="preview-section">
-              <h3>{section.title}</h3>
-              <div className="preview-fields">
-                {/* Render custom fields first (like Dashas) */}
-                {section.customFields && section.customFields.map((customField, customIdx) => {
-                  const value = customField.getValue();
-                  if (!value) return null;
+          {sections.map((section, idx) => {
+            // Check if section has any non-empty fields
+            const hasCustomFields = section.customFields && section.customFields.some(cf => cf.getValue());
+            const hasRegularFields = section.fields && section.fields.some(field => {
+              if (field.key === 'mapOfHouse') {
+                const imageUrls = formData.houseMapImages || [];
+                const textValue = formData[field.key];
+                return imageUrls.length > 0 || textValue;
+              }
+              return formData[field.key];
+            });
 
-                  return (
-                    <div key={`custom-${customIdx}`} className="preview-field">
-                      <span className="field-label">{customField.label}:</span>
-                      <span className="field-value">{value}</span>
-                    </div>
-                  );
-                })}
+            // If section has no content, don't render it
+            if (!hasCustomFields && !hasRegularFields) return null;
 
-                {/* Render regular fields */}
-                {section.fields && section.fields.map((field, fieldIdx) => {
+            return (
+              <div key={idx} className="preview-section">
+                <h3>{section.title}</h3>
+                <div className="preview-fields">
+                  {/* Render custom fields first (like Dashas) */}
+                  {section.customFields && section.customFields.map((customField, customIdx) => {
+                    const value = customField.getValue();
+                    if (!value) return null;
+
+                    return (
+                      <div key={`custom-${customIdx}`} className="preview-field">
+                        <span className="field-label">{customField.label}:</span>
+                        <span className="field-value">{value}</span>
+                      </div>
+                    );
+                  })}
+
+                  {/* Render regular fields */}
+                  {section.fields && section.fields.map((field, fieldIdx) => {
                   const value = formData[field.key];
+
+                  // Special handling for house map images
+                  if (field.key === 'mapOfHouse') {
+                    const imageUrls = formData.houseMapImages || [];
+                    const analyses = formData.houseMapAnalyses || [];
+                    const textValue = formData[field.key];
+
+                    // If neither images nor text, return null
+                    if (imageUrls.length === 0 && !textValue) return null;
+
+                    return (
+                      <div key={fieldIdx} className="preview-field">
+                        <span className="field-label">{field.label}:</span>
+                        <div className="field-value">
+                          {imageUrls.length > 0 && (
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '20px',
+                              marginBottom: '10px'
+                            }}>
+                              {imageUrls.map((imageUrl, imgIdx) => (
+                                <div key={imgIdx} style={{
+                                  border: '2px solid #e5e7eb',
+                                  borderRadius: '8px',
+                                  padding: '12px',
+                                  backgroundColor: '#f9fafb'
+                                }}>
+                                  <div style={{
+                                    fontWeight: '600',
+                                    marginBottom: '10px',
+                                    color: '#374151',
+                                    fontSize: '14px'
+                                  }}>
+                                    Map {imgIdx + 1}
+                                  </div>
+                                  <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '15px'
+                                  }}>
+                                    <div>
+                                      <img
+                                        src={imageUrl}
+                                        alt={`House Map ${imgIdx + 1}`}
+                                        style={{
+                                          width: '100%',
+                                          maxHeight: '300px',
+                                          objectFit: 'contain',
+                                          borderRadius: '6px',
+                                          border: '1px solid #d1d5db'
+                                        }}
+                                      />
+                                    </div>
+                                    {analyses[imgIdx] && (
+                                      <div style={{
+                                        padding: '10px',
+                                        backgroundColor: 'white',
+                                        borderRadius: '6px',
+                                        border: '1px solid #d1d5db',
+                                        whiteSpace: 'pre-wrap',
+                                        maxHeight: '300px',
+                                        overflowY: 'auto'
+                                      }}>
+                                        <div style={{
+                                          fontWeight: '600',
+                                          marginBottom: '8px',
+                                          fontSize: '13px',
+                                          color: '#6b7280'
+                                        }}>
+                                          Room Directions:
+                                        </div>
+                                        {analyses[imgIdx]}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {textValue && <div>{textValue}</div>}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Regular field handling
                   if (!value) return null;
 
                   return (
@@ -189,7 +291,8 @@ function ReportPreview({ formData, onClose, onExport }) {
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
 
           <div className="preview-timestamp">
             Generated on: {new Date().toLocaleString('en-US', {
@@ -204,12 +307,49 @@ function ReportPreview({ formData, onClose, onExport }) {
         </div>
 
         <div className="preview-actions">
-          <button className="btn-secondary" onClick={onClose}>
-            Edit Report
-          </button>
-          <button className="btn-primary" onClick={onExport}>
-            <ShinyText text="Export Report" disabled={false} speed={3} />
-          </button>
+          <div style={{
+            width: '100%',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <label style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#555'
+            }}>
+              File Name:
+            </label>
+            <input
+              type="text"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder="Enter filename"
+              style={{
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #ff8c00',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'border-color 0.3s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#ff6600'}
+              onBlur={(e) => e.target.style.borderColor = '#ff8c00'}
+            />
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '15px',
+            width: '100%'
+          }}>
+            <button className="btn-secondary" onClick={onClose}>
+              Edit Report
+            </button>
+            <button className="btn-primary" onClick={() => onExport(filename)}>
+              <ShinyText text="Export Report" disabled={false} speed={3} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -711,6 +711,23 @@ function ReportForm({ darkTheme }) {
   const [colorObjectSuggestions, setColorObjectSuggestions] = useState('');
   const [saturnRelationPlanets, setSaturnRelationPlanets] = useState([{ planet: '', hasBTag: false }]);
   const [venusRelationPlanets, setVenusRelationPlanets] = useState([{ planet: '', hasBTag: false }]);
+  const [kundliPdf, setKundliPdf] = useState(null);
+  const [showKundliViewer, setShowKundliViewer] = useState(false);
+  const [kundliZoom, setKundliZoom] = useState(1);
+  const [kundliPosition, setKundliPosition] = useState({ x: 100, y: 100 });
+  const [kundliSize, setKundliSize] = useState({ width: 600, height: 700 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+  // House Map state - array to support multiple maps with analysis
+  const [houseMaps, setHouseMaps] = useState([]);
+
+  // Modal state for viewing maps
+  const [viewingMap, setViewingMap] = useState(null);
+  const [mapZoom, setMapZoom] = useState(1);
+
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm();
 
   // Update Saturn Relation formatted string whenever planets change
@@ -1742,6 +1759,209 @@ function ReportForm({ darkTheme }) {
     }
   }, [watch('venusFollowing'), setValue, watch]);
 
+  // Handle Kundli PDF upload
+  const handleKundliUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      const fileUrl = URL.createObjectURL(file);
+      setKundliPdf(fileUrl);
+      setShowKundliViewer(true);
+      setKundliZoom(1);
+
+      // Extract text from PDF using backend API
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('http://localhost:5001/api/extract-pdf-data', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            // Auto-fill form fields with extracted data
+            if (result.data.name) {
+              setValue('name', result.data.name);
+            }
+            if (result.data.dateOfBirth) {
+              setValue('dateOfBirth', result.data.dateOfBirth);
+            }
+            if (result.data.timeOfBirth) {
+              setValue('timeOfBirth', result.data.timeOfBirth);
+            }
+            if (result.data.placeOfBirth) {
+              setValue('placeOfBirth', result.data.placeOfBirth);
+            }
+
+            console.log('Extracted data:', result.data);
+            console.log('First 500 chars of PDF:', result.extractedText);
+          }
+        } else {
+          console.error('Failed to extract PDF data:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error extracting PDF text:', error);
+      }
+    } else {
+      alert('Please upload a valid PDF file');
+    }
+  };
+
+  // Handle dragging
+  const handleMouseDown = (e) => {
+    if (e.target.classList.contains('kundli-header')) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - kundliPosition.x,
+        y: e.clientY - kundliPosition.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setKundliPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+    if (isResizing) {
+      const newWidth = Math.max(300, resizeStart.width + (e.clientX - resizeStart.x));
+      const newHeight = Math.max(300, resizeStart.height + (e.clientY - resizeStart.y));
+      setKundliSize({ width: newWidth, height: newHeight });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
+
+  const handleResizeMouseDown = (e) => {
+    e.stopPropagation();
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: kundliSize.width,
+      height: kundliSize.height
+    });
+  };
+
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, dragStart, resizeStart]);
+
+  // Default room template for each map
+  const defaultRoomTemplate = {
+    'Main Entrance': '',
+    'Living Room': '',
+    'Kitchen': '',
+    'Master Bedroom': '',
+    'Bedroom 2': '',
+    'Bedroom 3': '',
+    'Dining Room': '',
+    'Pooja Room/Prayer Room': '',
+    'Bathroom 1': '',
+    'Bathroom 2': '',
+    'Bathroom 3': '',
+    'Study Room': '',
+    'Store Room': '',
+    'Balcony': '',
+    'Terrace': '',
+    'Garage': '',
+    'Garden': '',
+    'Staircase': ''
+  };
+
+  // Handle House Map upload - supports multiple files (images and PDFs)
+  const handleMapUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    const validFiles = files.filter(file =>
+      file.type.startsWith('image/') || file.type === 'application/pdf'
+    );
+
+    if (validFiles.length === 0) {
+      alert('Please upload valid image files (JPG, PNG, etc.) or PDF files');
+      return;
+    }
+
+    const newMaps = [];
+
+    for (const file of validFiles) {
+      if (file.type === 'application/pdf') {
+        // Handle PDF files - send to backend for conversion
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const response = await fetch('http://localhost:5001/api/convert-pdf-to-image', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to convert PDF');
+          }
+
+          const result = await response.json();
+
+          if (result.success && result.images) {
+            // Add each page as a separate map
+            result.images.forEach((imageBase64, idx) => {
+              newMaps.push({
+                url: imageBase64,
+                name: `${file.name} - Page ${idx + 1}`,
+                rooms: { ...defaultRoomTemplate }
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error converting PDF:', error);
+          alert(`Failed to convert PDF "${file.name}": ${error.message || 'Unknown error'}`);
+        }
+      } else {
+        // Handle image files
+        newMaps.push({
+          url: URL.createObjectURL(file),
+          name: file.name,
+          rooms: { ...defaultRoomTemplate }
+        });
+      }
+    }
+
+    if (newMaps.length > 0) {
+      setHouseMaps(prev => [...prev, ...newMaps]);
+    }
+
+    // Reset the input to allow re-uploading the same file
+    event.target.value = '';
+  };
+
+  // Remove a specific house map
+  const removeHouseMap = (index) => {
+    setHouseMaps(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Update room direction for a specific map
+  const updateRoomDirection = (mapIndex, roomName, direction) => {
+    setHouseMaps(prev => prev.map((map, i) =>
+      i === mapIndex ? {
+        ...map,
+        rooms: { ...map.rooms, [roomName]: direction }
+      } : map
+    ));
+  };
+
   // Auto-generate gift recommendations for Gifts to Receive
   useEffect(() => {
     const planetGifts = {
@@ -1881,12 +2101,23 @@ function ReportForm({ darkTheme }) {
       .map(item => `• Place ${item.planet} in ${item.direction}`)
       .join('\n');
 
+    // Format room directions for each map
+    const formattedRoomDirections = houseMaps.map(map => {
+      const specifiedRooms = Object.entries(map.rooms)
+        .filter(([room, direction]) => direction !== '')
+        .map(([room, direction]) => `• ${room}: ${direction}`)
+        .join('\n');
+      return specifiedRooms;
+    });
+
     const updatedData = {
       ...data,
       aspectsOnHouses: formattedAspectsOnHouses,
       aspectsOnPlanets: formattedAspectsOnPlanets,
       whatToRemove: formattedRemovalItems,
-      whatToPlace: formattedPlacementItems
+      whatToPlace: formattedPlacementItems,
+      houseMapImages: houseMaps.map(m => m.url),
+      houseMapAnalyses: formattedRoomDirections
     };
 
     setPreviewData(updatedData);
@@ -1902,7 +2133,7 @@ function ReportForm({ darkTheme }) {
     return 'th';
   };
 
-  const onExport = async () => {
+  const onExport = async (customFilename) => {
     setLoading(true);
     setMessage(null);
     setShowPreview(false);
@@ -1912,7 +2143,57 @@ function ReportForm({ darkTheme }) {
       const formData = { ...previewData };
       delete formData.reportType;
 
-      await apiService.generateReport(reportType, formData);
+      // Send Kundli PDF directly (pages 1, 3, 4) if present
+      if (kundliPdf) {
+        try {
+          const response = await fetch(kundliPdf);
+          const blob = await response.blob();
+          const reader = new FileReader();
+
+          const kundliBase64 = await new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+
+          formData.kundliPdf = kundliBase64;
+          formData.kundliPages = [1, 3, 4]; // Pages to extract
+        } catch (error) {
+          console.error('Error processing Kundli PDF:', error);
+        }
+      }
+
+      // Convert house map blob URLs to base64 if present
+      if (formData.houseMapImages && formData.houseMapImages.length > 0) {
+        try {
+          const base64Images = await Promise.all(
+            formData.houseMapImages.map(async (imageUrl) => {
+              try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const reader = new FileReader();
+
+                return await new Promise((resolve, reject) => {
+                  reader.onloadend = () => resolve(reader.result);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                });
+              } catch (error) {
+                console.error('Error converting image to base64:', error);
+                return null;
+              }
+            })
+          );
+
+          // Filter out failed conversions
+          formData.houseMapImages = base64Images.filter(img => img !== null);
+        } catch (error) {
+          console.error('Error converting images to base64:', error);
+          delete formData.houseMapImages;
+        }
+      }
+
+      await apiService.generateReport(reportType, formData, customFilename);
       setMessage({ type: 'success', text: 'Report generated successfully!' });
       reset();
       setPreviewData(null);
@@ -1932,6 +2213,203 @@ function ReportForm({ darkTheme }) {
 
   return (
     <div className={`report-form ${darkTheme ? 'dark-theme' : ''}`}>
+      {/* Kundli PDF Upload Button */}
+      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <label
+          htmlFor="kundliUpload"
+          style={{
+            display: 'inline-block',
+            padding: '10px 20px',
+            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+            color: 'white',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '14px'
+          }}
+        >
+          📄 Upload Kundli PDF
+        </label>
+        <input
+          id="kundliUpload"
+          type="file"
+          accept="application/pdf"
+          onChange={handleKundliUpload}
+          style={{ display: 'none' }}
+        />
+        {kundliPdf && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowKundliViewer(true)}
+              style={{
+                marginLeft: '10px',
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}
+            >
+              👁️ View Kundli
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setKundliPdf(null);
+                setShowKundliViewer(false);
+                setKundliZoom(1);
+                // Reset file input
+                const fileInput = document.getElementById('kundliUpload');
+                if (fileInput) fileInput.value = '';
+              }}
+              style={{
+                marginLeft: '10px',
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}
+              title="Remove Kundli"
+            >
+              🗑️ Remove
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Kundli PDF Viewer Modal */}
+      {showKundliViewer && kundliPdf && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${kundliPosition.x}px`,
+            top: `${kundliPosition.y}px`,
+            width: `${kundliSize.width}px`,
+            height: `${kundliSize.height}px`,
+            backgroundColor: 'white',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+            borderRadius: '12px',
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {/* Header */}
+          <div
+            className="kundli-header"
+            style={{
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+              color: 'white',
+              padding: '12px 16px',
+              cursor: 'move',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              userSelect: 'none'
+            }}
+          >
+            <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Kundli PDF</span>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setKundliZoom(Math.max(0.5, kundliZoom - 0.1))}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                -
+              </button>
+              <span style={{ fontSize: '14px' }}>{Math.round(kundliZoom * 100)}%</span>
+              <button
+                type="button"
+                onClick={() => setKundliZoom(Math.min(2, kundliZoom + 0.1))}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowKundliViewer(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  marginLeft: '10px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          {/* PDF Content */}
+          <div
+            style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: '10px',
+              backgroundColor: '#f3f4f6',
+              position: 'relative'
+            }}
+          >
+            <iframe
+              src={kundliPdf}
+              style={{
+                width: `${100 / kundliZoom}%`,
+                height: `${100 / kundliZoom}%`,
+                transform: `scale(${kundliZoom})`,
+                transformOrigin: 'top left',
+                border: 'none'
+              }}
+              title="Kundli PDF"
+            />
+
+            {/* Resize Handle */}
+            <div
+              onMouseDown={handleResizeMouseDown}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: '20px',
+                height: '20px',
+                cursor: 'nwse-resize',
+                background: 'linear-gradient(135deg, transparent 50%, #1e3a8a 50%)',
+                borderBottomRightRadius: '12px'
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onPreview)}>
         {/* ABOUT THE CLIENT */}
         <div className="form-section">
@@ -1988,21 +2466,200 @@ function ReportForm({ darkTheme }) {
 
           <div className="form-group">
             <label htmlFor="mapOfHouse">Map of the House</label>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                multiple
+                onChange={handleMapUpload}
+                style={{ display: 'none' }}
+                id="mapUpload"
+              />
+              <label
+                htmlFor="mapUpload"
+                style={{
+                  padding: '8px 16px',
+                  background: 'linear-gradient(135deg, #4169e1 0%, #1e3a8a 100%)',
+                  color: 'white',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  border: 'none',
+                  display: 'inline-block'
+                }}
+              >
+                📁 Upload House Map{houseMaps.length > 0 ? 's' : ''} ({houseMaps.length})
+              </label>
+              {houseMaps.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setHouseMaps([])}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    border: 'none'
+                  }}
+                >
+                  🗑️ Remove All
+                </button>
+              )}
+            </div>
+            {houseMaps.length > 0 && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                marginBottom: '10px'
+              }}>
+                {houseMaps.map((map, index) => (
+                  <div key={index} style={{
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    padding: '15px',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '10px'
+                    }}>
+                      <h4 style={{ margin: 0, color: '#374151' }}>Map {index + 1}</h4>
+                      <button
+                        type="button"
+                        onClick={() => removeHouseMap(index)}
+                        style={{
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '6px 12px',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                        title="Remove this map"
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '15px'
+                    }}>
+                      <div>
+                        <img
+                          src={map.url}
+                          alt={`House Map ${index + 1}`}
+                          onClick={() => setViewingMap(map.url)}
+                          style={{
+                            width: '100%',
+                            maxHeight: '300px',
+                            objectFit: 'contain',
+                            borderRadius: '6px',
+                            border: '1px solid #d1d5db',
+                            cursor: 'pointer'
+                          }}
+                          title="Click to view full size"
+                        />
+                        <div style={{
+                          marginTop: '8px',
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          textAlign: 'center',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {map.name}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          marginBottom: '10px',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          color: '#374151'
+                        }}>
+                          Room Directions
+                        </label>
+                        <div style={{
+                          maxHeight: '300px',
+                          overflowY: 'auto',
+                          padding: '10px',
+                          backgroundColor: 'white',
+                          borderRadius: '6px',
+                          border: '1px solid #d1d5db'
+                        }}>
+                          {Object.keys(map.rooms).map((roomName) => (
+                            <div key={roomName} style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '8px 0',
+                              borderBottom: '1px solid #f3f4f6'
+                            }}>
+                              <label style={{
+                                fontSize: '13px',
+                                color: '#4b5563',
+                                flex: 1
+                              }}>
+                                {roomName}:
+                              </label>
+                              <select
+                                value={map.rooms[roomName]}
+                                onChange={(e) => updateRoomDirection(index, roomName, e.target.value)}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #d1d5db',
+                                  fontSize: '13px',
+                                  minWidth: '120px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <option value="">Not specified</option>
+                                <option value="North">North</option>
+                                <option value="North-North-East">North-North-East</option>
+                                <option value="North-East">North-East</option>
+                                <option value="East-North-East">East-North-East</option>
+                                <option value="East">East</option>
+                                <option value="East-South-East">East-South-East</option>
+                                <option value="South-East">South-East</option>
+                                <option value="South-South-East">South-South-East</option>
+                                <option value="South">South</option>
+                                <option value="South-South-West">South-South-West</option>
+                                <option value="South-West">South-West</option>
+                                <option value="West-South-West">West-South-West</option>
+                                <option value="West">West</option>
+                                <option value="West-North-West">West-North-West</option>
+                                <option value="North-West">North-West</option>
+                                <option value="North-North-West">North-North-West</option>
+                                <option value="Center">Center</option>
+                              </select>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             <textarea
               id="mapOfHouse"
               {...register('mapOfHouse')}
               placeholder="Describe house layout or upload details"
               rows="3"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="vastuAnalysis">Analysis (Entrances, Kitchen, Washrooms)</label>
-            <textarea
-              id="vastuAnalysis"
-              {...register('vastuAnalysis')}
-              placeholder="Enter vastu analysis details"
-              rows="4"
             />
           </div>
 
@@ -3356,6 +4013,171 @@ function ReportForm({ darkTheme }) {
           onClose={onClosePreview}
           onExport={onExport}
         />
+      )}
+
+      {/* Image Viewer Modal */}
+      {viewingMap && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+            overflow: 'auto'
+          }}
+          onClick={() => {
+            setViewingMap(null);
+            setMapZoom(1);
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setViewingMap(null);
+                setMapZoom(1);
+              }}
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '0',
+                backgroundColor: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                zIndex: 10001
+              }}
+              title="Close"
+            >
+              ✕
+            </button>
+
+            {/* Zoom Controls */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'white',
+                borderRadius: '25px',
+                padding: '10px 15px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                zIndex: 10001
+              }}
+            >
+              <button
+                onClick={() => setMapZoom(prev => Math.max(0.5, prev - 0.25))}
+                style={{
+                  backgroundColor: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}
+                title="Zoom out"
+              >
+                −
+              </button>
+              <span style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                minWidth: '50px',
+                textAlign: 'center'
+              }}>
+                {Math.round(mapZoom * 100)}%
+              </span>
+              <button
+                onClick={() => setMapZoom(prev => Math.min(3, prev + 0.25))}
+                style={{
+                  backgroundColor: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}
+                title="Zoom in"
+              >
+                +
+              </button>
+              <button
+                onClick={() => setMapZoom(1)}
+                style={{
+                  backgroundColor: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+                title="Reset zoom"
+              >
+                Reset
+              </button>
+            </div>
+
+            <img
+              src={viewingMap}
+              alt="House Map - Full View"
+              onWheel={(e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                setMapZoom(prev => Math.max(0.5, Math.min(3, prev + delta)));
+              }}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '90vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                transform: `scale(${mapZoom})`,
+                transition: 'transform 0.2s ease-in-out',
+                cursor: mapZoom > 1 ? 'move' : 'default',
+                imageRendering: 'high-quality'
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

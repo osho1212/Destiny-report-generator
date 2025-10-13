@@ -10,6 +10,9 @@ from jinja2 import Template
 from datetime import datetime
 import os
 import html
+import base64
+import io
+from PyPDF2 import PdfReader, PdfWriter
 
 class ReportGenerator:
     def __init__(self):
@@ -104,12 +107,12 @@ class ReportGenerator:
         story.append(Paragraph("DESTINY REPORT", title_style))
         story.append(Spacer(1, 0.4*inch))
 
-        # Section Title Style
+        # Section Title Style - orange color matching preview
         section_style = ParagraphStyle(
             'SectionTitle',
             parent=styles['Heading2'],
-            fontSize=16,
-            textColor=colors.HexColor('#667eea'),
+            fontSize=18,
+            textColor=colors.HexColor('#ff8c00'),
             spaceBefore=20,
             spaceAfter=12,
             fontName='Helvetica-Bold'
@@ -123,8 +126,14 @@ class ReportGenerator:
             spaceAfter=8
         )
 
-        # Helper function to add section
+        # Helper function to add section (only if it has content)
         def add_section(title, fields):
+            # Check if any field has a value
+            has_content = any(self.sanitize_input(form_data.get(field_key, '')) for field_key, _ in fields)
+
+            if not has_content:
+                return  # Skip empty sections
+
             story.append(Paragraph(title, section_style))
             story.append(Spacer(1, 0.1*inch))
             for field_key, field_label in fields:
@@ -150,43 +159,58 @@ class ReportGenerator:
         ])
 
         # ASTROLOGY (Custom handling for Dashas)
-        story.append(Paragraph("ASTROLOGY", section_style))
-        story.append(Spacer(1, 0.1*inch))
-
-        # Add Mahadasha
+        # Check if ASTROLOGY section has any content
         mahadasha = self.format_dasha(form_data, 'mahadasha')
-        if mahadasha:
-            story.append(Paragraph(f"<b>Mahadasha:</b> {mahadasha}", field_style))
-
-        # Add Antardasha
         antardasha = self.format_dasha(form_data, 'antardasha')
-        if antardasha:
-            story.append(Paragraph(f"<b>Antardasha:</b> {antardasha}", field_style))
-
-        # Add Pratyantardasha
         pratyantardasha = self.format_dasha(form_data, 'pratyantardasha')
-        if pratyantardasha:
-            story.append(Paragraph(f"<b>Pratyantar Dasha:</b> {pratyantardasha}", field_style))
 
-        # Add other astrology fields
-        for field_key, field_label in [
-            ('donationsToDo', 'Donations to Do'),
-            ('donationsToWhom', 'Donations - To Whom'),
-            ('gemstones', 'Gemstones'),
-            ('mantra', 'Mantra to Make Situation Positive'),
-            ('birthNakshatra', 'Your Birth Nakshatra'),
-            ('mobileDisplayPicture', 'Beneficial Mobile Display Picture'),
-            ('beneficialSymbols', 'Most Beneficial Symbols'),
-            ('nakshatraProsperitySymbols', 'Prosperity Giving Symbols'),
-            ('nakshatraMentalPhysicalWellbeing', 'Mental/Physical Wellbeing Symbols'),
-            ('nakshatraAccomplishments', 'Accomplishment/Achievement Symbols'),
-            ('nakshatraAvoidSymbols', 'Symbols to Avoid')
-        ]:
-            value = self.sanitize_input(form_data.get(field_key, ''))
-            if value:
-                story.append(Paragraph(f"<b>{field_label}:</b> {value}", field_style))
+        astrology_fields = [
+            'donationsToDo', 'donationsToWhom', 'gemstones', 'mantra',
+            'birthNakshatra', 'mobileDisplayPicture', 'beneficialSymbols',
+            'nakshatraProsperitySymbols', 'nakshatraMentalPhysicalWellbeing',
+            'nakshatraAccomplishments', 'nakshatraAvoidSymbols'
+        ]
 
-        story.append(Spacer(1, 0.2*inch))
+        has_astrology_content = (
+            mahadasha or antardasha or pratyantardasha or
+            any(self.sanitize_input(form_data.get(field, '')) for field in astrology_fields)
+        )
+
+        if has_astrology_content:
+            story.append(Paragraph("ASTROLOGY", section_style))
+            story.append(Spacer(1, 0.1*inch))
+
+            # Add Mahadasha
+            if mahadasha:
+                story.append(Paragraph(f"<b>Mahadasha:</b> {mahadasha}", field_style))
+
+            # Add Antardasha
+            if antardasha:
+                story.append(Paragraph(f"<b>Antardasha:</b> {antardasha}", field_style))
+
+            # Add Pratyantardasha
+            if pratyantardasha:
+                story.append(Paragraph(f"<b>Pratyantar Dasha:</b> {pratyantardasha}", field_style))
+
+            # Add other astrology fields
+            for field_key, field_label in [
+                ('donationsToDo', 'Donations to Do'),
+                ('donationsToWhom', 'Donations - To Whom'),
+                ('gemstones', 'Gemstones'),
+                ('mantra', 'Mantra to Make Situation Positive'),
+                ('birthNakshatra', 'Your Birth Nakshatra'),
+                ('mobileDisplayPicture', 'Beneficial Mobile Display Picture'),
+                ('beneficialSymbols', 'Most Beneficial Symbols'),
+                ('nakshatraProsperitySymbols', 'Prosperity Giving Symbols'),
+                ('nakshatraMentalPhysicalWellbeing', 'Mental/Physical Wellbeing Symbols'),
+                ('nakshatraAccomplishments', 'Accomplishment/Achievement Symbols'),
+                ('nakshatraAvoidSymbols', 'Symbols to Avoid')
+            ]:
+                value = self.sanitize_input(form_data.get(field_key, ''))
+                if value:
+                    story.append(Paragraph(f"<b>{field_label}:</b> {value}", field_style))
+
+            story.append(Spacer(1, 0.2*inch))
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
@@ -227,6 +251,48 @@ class ReportGenerator:
 
         # Build PDF
         doc.build(story)
+
+        # If Kundli PDF is provided, merge specific pages (1, 3, 4) at the beginning
+        kundli_pdf_data = form_data.get('kundliPdf')
+        kundli_pages = [1, 3, 4]  # Pages to extract from Kundli PDF
+
+        if kundli_pdf_data and kundli_pdf_data.startswith('data:application/pdf'):
+            try:
+                print(f"Merging Kundli pages {kundli_pages} at the beginning...")
+
+                # Extract base64 data
+                pdf_data = kundli_pdf_data.split(',')[1]
+                pdf_bytes = base64.b64decode(pdf_data)
+
+                # Read the Kundli PDF
+                kundli_reader = PdfReader(io.BytesIO(pdf_bytes))
+                print(f"Kundli PDF has {len(kundli_reader.pages)} pages")
+
+                # Read the generated report PDF
+                report_reader = PdfReader(filepath)
+                print(f"Generated report has {len(report_reader.pages)} pages")
+
+                # Create a new PDF writer
+                pdf_writer = PdfWriter()
+
+                # Add selected Kundli pages first (1-indexed to 0-indexed)
+                for page_num in kundli_pages:
+                    if 1 <= page_num <= len(kundli_reader.pages):
+                        pdf_writer.add_page(kundli_reader.pages[page_num - 1])
+                        print(f"Added Kundli page {page_num}")
+
+                # Add all pages from the generated report
+                for page in report_reader.pages:
+                    pdf_writer.add_page(page)
+
+                # Write the merged PDF
+                with open(filepath, 'wb') as output_file:
+                    pdf_writer.write(output_file)
+
+                print(f"Successfully merged Kundli pages {kundli_pages} at the beginning")
+            except Exception as e:
+                print(f"Error merging Kundli PDF: {e}")
+
         return filepath
 
     def generate_docx(self, form_data):
@@ -244,8 +310,14 @@ class ReportGenerator:
         title.alignment = 1  # Center
         doc.add_paragraph()
 
-        # Helper function to add section
+        # Helper function to add section (only if it has content)
         def add_section(title, fields):
+            # Check if any field has a value
+            has_content = any(self.sanitize_input(form_data.get(field_key, '')) for field_key, _ in fields)
+
+            if not has_content:
+                return  # Skip empty sections
+
             doc.add_heading(title, level=1)
             for field_key, field_label in fields:
                 value = self.sanitize_input(form_data.get(field_key, ''))
@@ -271,50 +343,65 @@ class ReportGenerator:
         ])
 
         # ASTROLOGY (Custom handling for Dashas)
-        doc.add_heading("ASTROLOGY", level=1)
-
-        # Add Mahadasha
+        # Check if ASTROLOGY section has any content
         mahadasha = self.format_dasha(form_data, 'mahadasha')
-        if mahadasha:
-            p = doc.add_paragraph()
-            p.add_run('Mahadasha: ').bold = True
-            p.add_run(mahadasha)
-
-        # Add Antardasha
         antardasha = self.format_dasha(form_data, 'antardasha')
-        if antardasha:
-            p = doc.add_paragraph()
-            p.add_run('Antardasha: ').bold = True
-            p.add_run(antardasha)
-
-        # Add Pratyantardasha
         pratyantardasha = self.format_dasha(form_data, 'pratyantardasha')
-        if pratyantardasha:
-            p = doc.add_paragraph()
-            p.add_run('Pratyantar Dasha: ').bold = True
-            p.add_run(pratyantardasha)
 
-        # Add other astrology fields
-        for field_key, field_label in [
-            ('donationsToDo', 'Donations to Do'),
-            ('donationsToWhom', 'Donations - To Whom'),
-            ('gemstones', 'Gemstones'),
-            ('mantra', 'Mantra to Make Situation Positive'),
-            ('birthNakshatra', 'Your Birth Nakshatra'),
-            ('mobileDisplayPicture', 'Beneficial Mobile Display Picture'),
-            ('beneficialSymbols', 'Most Beneficial Symbols'),
-            ('nakshatraProsperitySymbols', 'Prosperity Giving Symbols'),
-            ('nakshatraMentalPhysicalWellbeing', 'Mental/Physical Wellbeing Symbols'),
-            ('nakshatraAccomplishments', 'Accomplishment/Achievement Symbols'),
-            ('nakshatraAvoidSymbols', 'Symbols to Avoid')
-        ]:
-            value = self.sanitize_input(form_data.get(field_key, ''))
-            if value:
+        astrology_fields = [
+            'donationsToDo', 'donationsToWhom', 'gemstones', 'mantra',
+            'birthNakshatra', 'mobileDisplayPicture', 'beneficialSymbols',
+            'nakshatraProsperitySymbols', 'nakshatraMentalPhysicalWellbeing',
+            'nakshatraAccomplishments', 'nakshatraAvoidSymbols'
+        ]
+
+        has_astrology_content = (
+            mahadasha or antardasha or pratyantardasha or
+            any(self.sanitize_input(form_data.get(field, '')) for field in astrology_fields)
+        )
+
+        if has_astrology_content:
+            doc.add_heading("ASTROLOGY", level=1)
+
+            # Add Mahadasha
+            if mahadasha:
                 p = doc.add_paragraph()
-                p.add_run(f'{field_label}: ').bold = True
-                p.add_run(str(value))
+                p.add_run('Mahadasha: ').bold = True
+                p.add_run(mahadasha)
 
-        doc.add_paragraph()
+            # Add Antardasha
+            if antardasha:
+                p = doc.add_paragraph()
+                p.add_run('Antardasha: ').bold = True
+                p.add_run(antardasha)
+
+            # Add Pratyantardasha
+            if pratyantardasha:
+                p = doc.add_paragraph()
+                p.add_run('Pratyantar Dasha: ').bold = True
+                p.add_run(pratyantardasha)
+
+            # Add other astrology fields
+            for field_key, field_label in [
+                ('donationsToDo', 'Donations to Do'),
+                ('donationsToWhom', 'Donations - To Whom'),
+                ('gemstones', 'Gemstones'),
+                ('mantra', 'Mantra to Make Situation Positive'),
+                ('birthNakshatra', 'Your Birth Nakshatra'),
+                ('mobileDisplayPicture', 'Beneficial Mobile Display Picture'),
+                ('beneficialSymbols', 'Most Beneficial Symbols'),
+                ('nakshatraProsperitySymbols', 'Prosperity Giving Symbols'),
+                ('nakshatraMentalPhysicalWellbeing', 'Mental/Physical Wellbeing Symbols'),
+                ('nakshatraAccomplishments', 'Accomplishment/Achievement Symbols'),
+                ('nakshatraAvoidSymbols', 'Symbols to Avoid')
+            ]:
+                value = self.sanitize_input(form_data.get(field_key, ''))
+                if value:
+                    p = doc.add_paragraph()
+                    p.add_run(f'{field_label}: ').bold = True
+                    p.add_run(str(value))
+
+            doc.add_paragraph()
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [

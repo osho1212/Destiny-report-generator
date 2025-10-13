@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from datetime import datetime
 import os
+import re
+import json
+from io import BytesIO
+from PyPDF2 import PdfReader
+from PIL import Image as PILImage
 from utils.report_generator import ReportGenerator
 from utils.zodiac_mapping import ZODIAC_BODY_MAPPING, get_zodiac_info, get_accessories_for_sign
 from utils.vastu_directions import (
@@ -351,6 +356,319 @@ def check_planet_strength():
         print(f"Error checking planet strength: {str(e)}")
         return jsonify({'error': 'Failed to check planet strength'}), 500
 
+@app.route('/api/extract-pdf-data', methods=['POST'])
+def extract_pdf_data():
+    """Extract client data from uploaded Kundli PDF"""
+    try:
+        # Check if file is present
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+
+        file = request.files['file']
+
+        # Validate file
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({'error': 'File must be a PDF'}), 400
+
+        # Read PDF
+        pdf_reader = PdfReader(BytesIO(file.read()))
+
+        # Extract text from first page
+        if len(pdf_reader.pages) == 0:
+            return jsonify({'error': 'PDF has no pages'}), 400
+
+        first_page = pdf_reader.pages[0]
+        text = first_page.extract_text()
+
+        # Log the extracted text for debugging
+        print("=" * 80)
+        print("EXTRACTED PDF TEXT:")
+        print(text)
+        print("=" * 80)
+
+        # Initialize extracted data
+        extracted_data = {}
+
+        # Extract Name - look for various patterns
+        name_patterns = [
+            r'Name[:\s]*([A-Za-z\s\.]+?)(?:\s*(?:DOB|Date of Birth|TOB|POB|Gender|Male|Female|\n|$))',
+            r'Client[:\s]*([A-Za-z\s\.]+?)(?:\s*(?:DOB|Date of Birth|\n|$))',
+            r'Name[:\s]+([A-Za-z\s\.]+)',  # More lenient
+        ]
+
+        for pattern in name_patterns:
+            name_match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+            if name_match and name_match.group(1):
+                name = name_match.group(1).strip()
+                # Clean up and validate
+                name = re.sub(r'\s+', ' ', name)
+                if len(name) > 2:
+                    extracted_data['name'] = name
+                    print(f"Found Name match: {name}")
+                    break
+
+        # Extract DOB - various date formats
+        dob_patterns = [
+            r'DOB[:\s]*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+            r'Date of Birth[:\s]*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+            r'Birth Date[:\s]*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+            r'D\.O\.B[:\s]*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',
+            r'DOB[:\s]*(\d{1,2}\s+[A-Za-z]+\s+\d{2,4})',  # Format: 15 January 1990
+            r'Date of Birth[:\s]*(\d{1,2}\s+[A-Za-z]+\s+\d{2,4})',
+            r'DOB\s*[:\-]?\s*(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{2,4})',  # Flexible spacing
+            r'(\d{1,2}[-/\.]\d{1,2}[-/\.]\d{4})',  # Just a date pattern anywhere in first part
+        ]
+
+        for pattern in dob_patterns:
+            dob_match = re.search(pattern, text, re.IGNORECASE)
+            if dob_match and dob_match.group(1):
+                date_str = dob_match.group(1)
+                print(f"Found DOB match: {date_str}")
+
+                # Try to parse date with different formats
+                try:
+                    # Check if it contains text month name
+                    if re.search(r'[A-Za-z]', date_str):
+                        from datetime import datetime
+                        # Try formats like "15 January 1990" or "15 Jan 1990"
+                        for fmt in ['%d %B %Y', '%d %b %Y', '%d-%B-%Y', '%d-%b-%Y']:
+                            try:
+                                dt = datetime.strptime(date_str.strip(), fmt)
+                                extracted_data['dateOfBirth'] = dt.strftime('%Y-%m-%d')
+                                break
+                            except:
+                                continue
+                    else:
+                        # Numeric date format
+                        date_parts = re.split(r'[-/\.]', date_str)
+                        if len(date_parts) == 3:
+                            day = date_parts[0].zfill(2)
+                            month = date_parts[1].zfill(2)
+                            year = date_parts[2]
+
+                            # Handle 2-digit year
+                            if len(year) == 2:
+                                year = '19' + year if int(year) > 50 else '20' + year
+
+                            extracted_data['dateOfBirth'] = f"{year}-{month}-{day}"
+
+                    if 'dateOfBirth' in extracted_data:
+                        break
+                except Exception as e:
+                    print(f"Error parsing date: {e}")
+                    continue
+
+        # Extract TOB - time of birth
+        tob_patterns = [
+            r'TOB[:\s]*(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?)',
+            r'Time of Birth[:\s]*(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?)',
+            r'Birth Time[:\s]*(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?)',
+            r'T\.O\.B[:\s]*(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?)',
+        ]
+
+        for pattern in tob_patterns:
+            tob_match = re.search(pattern, text, re.IGNORECASE)
+            if tob_match and tob_match.group(1):
+                extracted_data['timeOfBirth'] = tob_match.group(1).strip()
+                break
+
+        # Extract POB - place of birth
+        pob_patterns = [
+            r'POB[:\s]*([A-Za-z\s,\-\.()]+?)(?=TOB|Time of Birth|State|Country|Latitude|Longitude|Time Zone|\n|$)',  # Handle concatenated POB:AhmedabadTOB
+            r'Place of Birth[:\s]*([A-Za-z\s,\-\.()]+?)(?=\s*(?:State|Country|Latitude|\n|$))',
+            r'Birth Place[:\s]*([A-Za-z\s,\-\.()]+?)(?=\s*(?:State|Country|\n|$))',
+            r'P\.O\.B[:\s]*([A-Za-z\s,\-\.()]+?)(?=\s*(?:State|Country|\n|$))',
+        ]
+
+        for pattern in pob_patterns:
+            pob_match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+            if pob_match and pob_match.group(1):
+                place = pob_match.group(1).strip()
+                # Remove "TOB" if it got captured at the end
+                place = re.sub(r'TOB$', '', place, flags=re.IGNORECASE).strip()
+                print(f"Found POB match: {place}")
+                # Clean up the place name (remove trailing dots, extra spaces, etc.)
+                place = re.sub(r'\s+', ' ', place)
+                place = place.rstrip('.,')
+                if len(place) > 2:  # Make sure it's not just whitespace or single char
+                    extracted_data['placeOfBirth'] = place
+                    break
+
+        # Return extracted data
+        return jsonify({
+            'success': True,
+            'data': extracted_data,
+            'extractedText': text[:500]  # First 500 chars for debugging
+        })
+
+    except Exception as e:
+        print(f"Error extracting PDF data: {str(e)}")
+        return jsonify({'error': f'Failed to extract PDF data: {str(e)}'}), 500
+
+@app.route('/api/convert-pdf-to-image', methods=['POST'])
+def convert_pdf_to_image():
+    """Convert PDF pages to images"""
+    try:
+        # Check if file is present
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        print(f"Converting PDF to images: {file.filename}")
+
+        # Import pdf2image
+        from pdf2image import convert_from_bytes
+        import base64
+
+        # Read PDF file
+        pdf_bytes = file.read()
+
+        print(f"PDF file size: {len(pdf_bytes)} bytes")
+
+        # Convert PDF pages to images with poppler path
+        try:
+            images = convert_from_bytes(pdf_bytes, dpi=200, fmt='jpeg')
+            print(f"Successfully converted PDF to {len(images)} images")
+        except Exception as conv_error:
+            print(f"Error in convert_from_bytes: {str(conv_error)}")
+            # Try with explicit poppler path
+            images = convert_from_bytes(
+                pdf_bytes,
+                dpi=200,
+                fmt='jpeg',
+                poppler_path='/opt/homebrew/bin'
+            )
+            print(f"Successfully converted PDF to {len(images)} images (with explicit poppler path)")
+
+        # Convert images to base64
+        image_base64_list = []
+        for img in images:
+            # Convert to RGB if necessary
+            if img.mode in ('RGBA', 'P'):
+                rgb_img = PILImage.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                rgb_img.paste(img, mask=img.split()[3] if img.mode == 'RGBA' else None)
+                img = rgb_img
+
+            # Save to BytesIO as JPEG
+            img_io = BytesIO()
+            img.save(img_io, 'JPEG', quality=95, optimize=False, subsampling=0)
+            img_io.seek(0)
+
+            # Convert to base64
+            img_base64 = base64.b64encode(img_io.read()).decode('utf-8')
+            image_base64_list.append(f'data:image/jpeg;base64,{img_base64}')
+
+        return jsonify({
+            'success': True,
+            'images': image_base64_list,
+            'pageCount': len(image_base64_list)
+        })
+
+    except ImportError:
+        return jsonify({'error': 'pdf2image library not installed. Please run: pip install pdf2image'}), 500
+    except Exception as e:
+        print(f"Error converting PDF to image: {str(e)}")
+        return jsonify({'error': f'Failed to convert PDF: {str(e)}'}), 500
+
+@app.route('/api/convert-pdf-pages-to-images', methods=['POST'])
+def convert_pdf_pages_to_images():
+    """Convert specific PDF pages to images"""
+    try:
+        # Check if file is present
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+
+        file = request.files['file']
+
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        # Get page numbers to extract
+        pages_json = request.form.get('pages', '[1, 3, 4]')
+        page_numbers = json.loads(pages_json)
+
+        print(f"Converting specific pages from PDF: {file.filename}, pages: {page_numbers}")
+
+        # Import required modules
+        from pdf2image import convert_from_bytes
+        import base64
+
+        # Read PDF file
+        pdf_bytes = file.read()
+
+        print(f"PDF file size: {len(pdf_bytes)} bytes")
+
+        # Convert specific PDF pages to images with poppler path
+        try:
+            # Convert all pages first
+            all_images = convert_from_bytes(pdf_bytes, dpi=200, fmt='jpeg')
+            print(f"Total pages in PDF: {len(all_images)}")
+
+            # Extract only requested pages (1-indexed to 0-indexed)
+            selected_images = []
+            for page_num in page_numbers:
+                if 1 <= page_num <= len(all_images):
+                    selected_images.append(all_images[page_num - 1])
+                    print(f"Extracted page {page_num}")
+                else:
+                    print(f"Warning: Page {page_num} does not exist (total pages: {len(all_images)})")
+
+            print(f"Successfully extracted {len(selected_images)} pages")
+        except Exception as conv_error:
+            print(f"Error in convert_from_bytes: {str(conv_error)}")
+            # Try with explicit poppler path
+            all_images = convert_from_bytes(
+                pdf_bytes,
+                dpi=200,
+                fmt='jpeg',
+                poppler_path='/opt/homebrew/bin'
+            )
+            selected_images = []
+            for page_num in page_numbers:
+                if 1 <= page_num <= len(all_images):
+                    selected_images.append(all_images[page_num - 1])
+
+        # Convert images to base64
+        image_base64_list = []
+        for img in selected_images:
+            # Convert to RGB if necessary
+            if img.mode in ('RGBA', 'P'):
+                rgb_img = PILImage.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                rgb_img.paste(img, mask=img.split()[3] if img.mode == 'RGBA' else None)
+                img = rgb_img
+
+            # Save to BytesIO as JPEG
+            img_io = BytesIO()
+            img.save(img_io, 'JPEG', quality=95, optimize=False, subsampling=0)
+            img_io.seek(0)
+
+            # Convert to base64
+            img_base64 = base64.b64encode(img_io.read()).decode('utf-8')
+            image_base64_list.append(f'data:image/jpeg;base64,{img_base64}')
+
+        return jsonify({
+            'success': True,
+            'images': image_base64_list,
+            'pageCount': len(image_base64_list)
+        })
+
+    except ImportError:
+        return jsonify({'error': 'pdf2image library not installed. Please run: pip install pdf2image'}), 500
+    except Exception as e:
+        print(f"Error converting PDF pages to images: {str(e)}")
+        return jsonify({'error': f'Failed to convert PDF pages: {str(e)}'}), 500
+
 @app.route('/api/generate-report', methods=['POST'])
 def generate_report():
     """Generate report from form data"""
@@ -367,6 +685,7 @@ def generate_report():
 
         report_type = data.get('reportType', '').lower()
         form_data = data.get('formData', {})
+        custom_filename = data.get('filename', None)
 
         # Validate report type
         if report_type not in ['pdf', 'docx', 'excel']:
@@ -391,11 +710,20 @@ def generate_report():
         if not os.path.exists(file_path):
             return jsonify({'error': 'Failed to generate report'}), 500
 
+        # Determine download filename
+        if custom_filename:
+            # Sanitize filename to prevent directory traversal
+            safe_filename = os.path.basename(custom_filename)
+            extension = report_type if report_type != 'excel' else 'xlsx'
+            download_filename = f"{safe_filename}.{extension}"
+        else:
+            download_filename = os.path.basename(file_path)
+
         # Return file
         return send_file(
             file_path,
             as_attachment=True,
-            download_name=os.path.basename(file_path)
+            download_name=download_filename
         )
 
     except Exception as e:
