@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
+    }
+  ],
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|ico|txt|json)", "dest": "/$1.$2" },
+    { "src": "/api/(.*)", "dest": "https://REPLACE_WITH_BACKEND_HOST/api/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "env": {
+    "REACT_APP_API_URL": "/api"
+  }
+}
+
+
