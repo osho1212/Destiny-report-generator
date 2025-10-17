@@ -34,10 +34,13 @@ from utils.astro_vastu_logic import (
 
 app = Flask(__name__)
 
-# Configure CORS with specific origins (update in production)
+# Configure CORS with environment-based origins for deploy flexibility
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+        "origins": allowed_origins,
         "methods": ["GET", "POST"],
         "allow_headers": ["Content-Type"]
     }
@@ -747,5 +750,8 @@ def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    # Note: Set debug=False in production
-    app.run(debug=True, port=5001, host='127.0.0.1')
+    # Configure host/port/debug via environment for deployment
+    debug_env = os.getenv("FLASK_DEBUG", "false").lower() in ("1", "true", "yes", "on")
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    port = int(os.getenv("FLASK_PORT", "5001"))
+    app.run(debug=debug_env, port=port, host=host)
