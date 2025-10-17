@@ -721,6 +721,11 @@ function ReportForm({ darkTheme }) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
+  // No Star checkbox states for dasha sections
+  const [mahadashaNoStar, setMahadashaNoStar] = useState(false);
+  const [antardashaNoStar, setAntardashaNoStar] = useState(false);
+  const [pratyantardashaNoStar, setPratyantardashaNoStar] = useState(false);
+
   // House Map state - array to support multiple maps with analysis
   const [houseMaps, setHouseMaps] = useState([]);
 
@@ -1010,6 +1015,8 @@ function ReportForm({ darkTheme }) {
   useEffect(() => {
     const planetDegreeMap = new Map(); // Map to store planet with their non-120° degrees
     const planetAllDegrees = new Map(); // Map to store all degrees for determining duplicates
+    const planetHousesCount = new Map(); // Track how many houses each planet hits
+    const planetInBothAspects = new Map(); // Track if planet is in both houses and planets aspects
 
     // Collect planets with their degrees from aspects on houses
     aspectsOnHouses.forEach(aspect => {
@@ -1017,6 +1024,17 @@ function ReportForm({ darkTheme }) {
         const degrees = aspect.aspects
           .filter(a => a.degree)
           .map(a => a.degree);
+
+        // Count total houses hit
+        let totalHouses = 0;
+        aspect.aspects.forEach(a => {
+          const validHouses = a.houses.filter(h => h);
+          totalHouses += validHouses.length;
+        });
+
+        if (totalHouses > 0) {
+          planetHousesCount.set(aspect.planet, totalHouses);
+        }
 
         if (degrees.length > 0) {
           if (!planetDegreeMap.has(aspect.planet)) {
@@ -1043,6 +1061,11 @@ function ReportForm({ darkTheme }) {
           .filter(a => a.degree)
           .map(a => a.degree);
 
+        // Check if this planet also appears in aspectsOnHouses
+        if (planetHousesCount.has(aspect.planet)) {
+          planetInBothAspects.set(aspect.planet, true);
+        }
+
         if (degrees.length > 0) {
           if (!planetDegreeMap.has(aspect.planet)) {
             planetDegreeMap.set(aspect.planet, new Set());
@@ -1061,16 +1084,26 @@ function ReportForm({ darkTheme }) {
       }
     });
 
-    // Create removal items - one entry per planet with array of directions for each non-120° degree
+    // Create removal items - one entry per planet with array of directions
     const newRemovalItems = [];
     planetDegreeMap.forEach((degrees, planet) => {
-      const degreeCount = degrees.size;
-      if (degreeCount > 0) {
+      let directionCount = degrees.size;
+
+      // Special case: If planet hits multiple houses AND another planet, create 3 boxes
+      if (planetInBothAspects.has(planet) && planetHousesCount.get(planet) > 1) {
+        directionCount = 3;
+      }
+      // Special case: If planet only in aspectsOnPlanets and hits planets at different degrees, show only 1 box
+      else if (!planetHousesCount.has(planet) && degrees.size >= 2) {
+        directionCount = 1;
+      }
+
+      if (directionCount > 0) {
         const existing = removalItems.find(item => item.planet === planet);
 
-        // Create array of directions - one per degree
+        // Create array of directions
         const directions = [];
-        for (let i = 0; i < degreeCount; i++) {
+        for (let i = 0; i < directionCount; i++) {
           directions.push(existing && existing.directions[i] ? existing.directions[i] : '');
         }
 
@@ -2117,7 +2150,10 @@ function ReportForm({ darkTheme }) {
       whatToRemove: formattedRemovalItems,
       whatToPlace: formattedPlacementItems,
       houseMapImages: houseMaps.map(m => m.url),
-      houseMapAnalyses: formattedRoomDirections
+      houseMapAnalyses: formattedRoomDirections,
+      mahadasha_no_star: mahadashaNoStar,
+      antardasha_no_star: antardashaNoStar,
+      pratyantardasha_no_star: pratyantardashaNoStar
     };
 
     setPreviewData(updatedData);
@@ -2698,6 +2734,18 @@ function ReportForm({ darkTheme }) {
                 </select>
               </div>
               <div className="dasha-field">
+                <label htmlFor="mahadasha_no_star">
+                  <input
+                    id="mahadasha_no_star"
+                    type="checkbox"
+                    checked={mahadashaNoStar}
+                    onChange={(e) => setMahadashaNoStar(e.target.checked)}
+                    style={{ width: 'auto', marginRight: '5px' }}
+                  />
+                  No Star
+                </label>
+              </div>
+              <div className="dasha-field">
                 <label htmlFor="mahadasha_source">Source</label>
                 <input id="mahadasha_source" type="text" {...register('mahadasha_source')} placeholder="Source" />
               </div>
@@ -2766,6 +2814,18 @@ function ReportForm({ darkTheme }) {
                 </select>
               </div>
               <div className="dasha-field">
+                <label htmlFor="antardasha_no_star">
+                  <input
+                    id="antardasha_no_star"
+                    type="checkbox"
+                    checked={antardashaNoStar}
+                    onChange={(e) => setAntardashaNoStar(e.target.checked)}
+                    style={{ width: 'auto', marginRight: '5px' }}
+                  />
+                  No Star
+                </label>
+              </div>
+              <div className="dasha-field">
                 <label htmlFor="antardasha_source">Source</label>
                 <input id="antardasha_source" type="text" {...register('antardasha_source')} placeholder="Source" />
               </div>
@@ -2832,6 +2892,18 @@ function ReportForm({ darkTheme }) {
                   <option value="Saturn">Saturn</option>
                   <option value="Mercury">Mercury</option>
                 </select>
+              </div>
+              <div className="dasha-field">
+                <label htmlFor="pratyantardasha_no_star">
+                  <input
+                    id="pratyantardasha_no_star"
+                    type="checkbox"
+                    checked={pratyantardashaNoStar}
+                    onChange={(e) => setPratyantardashaNoStar(e.target.checked)}
+                    style={{ width: 'auto', marginRight: '5px' }}
+                  />
+                  No Star
+                </label>
               </div>
               <div className="dasha-field">
                 <label htmlFor="pratyantardasha_source">Source</label>
@@ -3096,6 +3168,51 @@ function ReportForm({ darkTheme }) {
               Aspects
             </button>
           </div>
+
+          {/* Display configured aspects */}
+          {(aspectsOnHouses.some(a => a.planet && a.aspects.some(asp => asp.houses.some(h => h) && asp.degree)) ||
+            aspectsOnPlanets.some(a => a.planet && a.aspects.some(asp => asp.planets.some(p => p) && asp.degree))) && (
+            <div className="form-group aspects-display">
+              {aspectsOnHouses.some(a => a.planet && a.aspects.some(asp => asp.houses.some(h => h) && asp.degree)) && (
+                <div className="aspects-display-section">
+                  <h4>Aspects on Houses:</h4>
+                  <div className="aspects-display-content">
+                    {aspectsOnHouses
+                      .filter(aspect => aspect.planet && aspect.aspects.some(a => a.houses.some(h => h) && a.degree))
+                      .map((aspect, idx) => {
+                        const parts = aspect.aspects
+                          .filter(a => a.houses.some(h => h) && a.degree)
+                          .map(a => {
+                            const validHouses = a.houses.filter(h => h);
+                            const houseList = validHouses.map(h => `${h}${getOrdinalSuffix(h)}`).join(' and ');
+                            return `${validHouses.length > 1 ? 'Houses ' : 'House '}${houseList} at ${a.degree}`;
+                          });
+                        return <div key={idx}>{aspect.planet} hits {parts.join(' and ')}</div>;
+                      })}
+                  </div>
+                </div>
+              )}
+              {aspectsOnPlanets.some(a => a.planet && a.aspects.some(asp => asp.planets.some(p => p) && asp.degree)) && (
+                <div className="aspects-display-section">
+                  <h4>Aspects on Planets:</h4>
+                  <div className="aspects-display-content">
+                    {aspectsOnPlanets
+                      .filter(aspect => aspect.planet && aspect.aspects.some(a => a.planets.some(p => p) && a.degree))
+                      .map((aspect, idx) => {
+                        const parts = aspect.aspects
+                          .filter(a => a.planets.some(p => p) && a.degree)
+                          .map(a => {
+                            const validPlanets = a.planets.filter(p => p);
+                            const planetList = validPlanets.join(' and ');
+                            return `${validPlanets.length > 1 ? 'Planets ' : 'Planet '}${planetList} at ${a.degree}`;
+                          });
+                        return <div key={idx}>{aspect.planet} hits {parts.join(' and ')}</div>;
+                      })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="form-group">
             <label>What to Remove from Which Directions</label>

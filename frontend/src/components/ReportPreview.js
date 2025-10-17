@@ -14,15 +14,21 @@ function ReportPreview({ formData, onClose, onExport }) {
     const additionalHouse = formData[`${prefix}_additional_house`];
     const sl = formData[`${prefix}_sl`];
     const slSource = formData[`${prefix}_sl_source`];
+    const noStar = formData[`${prefix}_no_star`];
 
     const parts = [];
 
-    // Planet(Source)
+    // Planet(Source) - add * if no_star is true
     if (planet) {
+      let planetText = planet;
+      if (noStar) {
+        planetText = `${planet}*`;
+      }
+
       if (source) {
-        parts.push(`${planet}(${source})`);
+        parts.push(`${planetText}(${source})`);
       } else {
-        parts.push(planet);
+        parts.push(planetText);
       }
     }
 

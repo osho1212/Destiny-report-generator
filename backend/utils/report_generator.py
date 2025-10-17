@@ -31,6 +31,7 @@ class ReportGenerator:
     def format_dasha(self, form_data, prefix):
         """Format dasha data from form fields
         Format: Planet(Source), NL(NL Source), (Additional house), SL(SL source)
+        If no_star is True for the dasha, add * as superscript to the first planet
         """
         planet = self.sanitize_input(form_data.get(f'{prefix}_planet', ''))
         source = self.sanitize_input(form_data.get(f'{prefix}_source', ''))
@@ -39,15 +40,20 @@ class ReportGenerator:
         additional_house = self.sanitize_input(form_data.get(f'{prefix}_additional_house', ''))
         sl = self.sanitize_input(form_data.get(f'{prefix}_sl', ''))
         sl_source = self.sanitize_input(form_data.get(f'{prefix}_sl_source', ''))
+        no_star = form_data.get(f'{prefix}_no_star', False)
 
         parts = []
 
-        # Planet(Source)
+        # Planet(Source) - add * if no_star is True
         if planet:
+            planet_text = planet
+            if no_star:
+                planet_text = f'{planet}*'
+
             if source:
-                parts.append(f'{planet}({source})')
+                parts.append(f'{planet_text}({source})')
             else:
-                parts.append(planet)
+                parts.append(planet_text)
 
         # NL Planet(NL Source)
         if nl:
@@ -103,12 +109,12 @@ class ReportGenerator:
             parent=styles['Heading1'],
             fontSize=28,
             textColor=colors.HexColor('#2c3e50'),
-            spaceAfter=20,
+            spaceAfter=30,
             alignment=1,
             fontName='Times-Bold'
         )
         story.append(Paragraph("DESTINY REPORT", title_style))
-        story.append(Spacer(1, 0.4*inch))
+        story.append(Spacer(1, 0.5*inch))
 
         # Section Title Style - orange color matching preview, Times New Roman
         section_style = ParagraphStyle(
@@ -116,22 +122,62 @@ class ReportGenerator:
             parent=styles['Heading2'],
             fontSize=18,
             textColor=colors.HexColor('#ff8c00'),
-            spaceBefore=20,
-            spaceAfter=12,
+            spaceBefore=30,
+            spaceAfter=16,
             fontName='Times-Bold'
         )
 
-        # Field Style - Times New Roman
+        # Field Label Style - Times New Roman, bold
+        field_label_style = ParagraphStyle(
+            'FieldLabel',
+            parent=styles['Normal'],
+            fontSize=11,
+            spaceAfter=4,
+            fontName='Times-Bold',
+            textColor=colors.HexColor('#333333')
+        )
+
+        # Field Value Style - Times New Roman, with bullet points
+        field_value_style = ParagraphStyle(
+            'FieldValue',
+            parent=styles['Normal'],
+            fontSize=11,
+            spaceAfter=12,
+            fontName='Times-Roman',
+            leftIndent=20,
+            bulletIndent=10,
+            bulletFontName='Times-Roman'
+        )
+
+        # Field Style - Times New Roman (for combined label+value)
         field_style = ParagraphStyle(
             'FieldStyle',
             parent=styles['Normal'],
             fontSize=11,
-            spaceAfter=8,
-            fontName='Times-Roman'
+            spaceAfter=12,
+            fontName='Times-Roman',
+            leftIndent=15
         )
 
+        # Helper function to format multi-line values with bullet points
+        def format_value_with_bullets(value):
+            """Format values that contain multiple lines or comma-separated items with bullets"""
+            if not value:
+                return []
+
+            # Check if value contains newlines or commas suggesting multiple items
+            if '\n' in value:
+                items = [item.strip() for item in value.split('\n') if item.strip()]
+            elif ',' in value and len(value) > 50:  # Only split by comma if text is long
+                items = [item.strip() for item in value.split(',') if item.strip()]
+            else:
+                # Single value, no bullets needed
+                return [value]
+
+            return items if len(items) > 1 else [value]
+
         # Helper function to add section (only if it has content)
-        def add_section(title, fields):
+        def add_section(title, fields, keep_inline=False):
             # Check if any field has a value
             has_content = any(self.sanitize_input(form_data.get(field_key, '')) for field_key, _ in fields)
 
@@ -147,14 +193,33 @@ class ReportGenerator:
             line.strokeWidth = 2
             d.add(line)
             story.append(d)
-            story.append(Spacer(1, 0.1*inch))
+            story.append(Spacer(1, 0.15*inch))
 
             for field_key, field_label in fields:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
-                    text = f"<b>{field_label}:</b> {value}"
-                    story.append(Paragraph(text, field_style))
-            story.append(Spacer(1, 0.2*inch))
+                    if keep_inline:
+                        # Keep label and value on same line (for About the Client)
+                        text = f"<b>{field_label}:</b> {value}"
+                        story.append(Paragraph(text, field_style))
+                    else:
+                        # Add field label
+                        story.append(Paragraph(f"<b>{field_label}:</b>", field_label_style))
+
+                        # Format value with bullets if multi-line
+                        items = format_value_with_bullets(value)
+                        if len(items) > 1:
+                            # Multiple items - use bullets
+                            for item in items:
+                                bullet_text = f"• {item}"
+                                story.append(Paragraph(bullet_text, field_value_style))
+                        else:
+                            # Single item - no bullet
+                            story.append(Paragraph(items[0], field_value_style))
+
+                    story.append(Spacer(1, 0.08*inch))
+
+            story.append(Spacer(1, 0.25*inch))
 
         # ABOUT THE CLIENT
         add_section("ABOUT THE CLIENT", [
@@ -199,19 +264,25 @@ class ReportGenerator:
             line.strokeWidth = 2
             d.add(line)
             story.append(d)
-            story.append(Spacer(1, 0.1*inch))
+            story.append(Spacer(1, 0.15*inch))
 
             # Add Mahadasha
             if mahadasha:
-                story.append(Paragraph(f"<b>Mahadasha:</b> {mahadasha}", field_style))
+                story.append(Paragraph("<b>Mahadasha:</b>", field_label_style))
+                story.append(Paragraph(mahadasha, field_value_style))
+                story.append(Spacer(1, 0.08*inch))
 
             # Add Antardasha
             if antardasha:
-                story.append(Paragraph(f"<b>Antardasha:</b> {antardasha}", field_style))
+                story.append(Paragraph("<b>Antardasha:</b>", field_label_style))
+                story.append(Paragraph(antardasha, field_value_style))
+                story.append(Spacer(1, 0.08*inch))
 
             # Add Pratyantardasha
             if pratyantardasha:
-                story.append(Paragraph(f"<b>Pratyantar Dasha:</b> {pratyantardasha}", field_style))
+                story.append(Paragraph("<b>Pratyantar Dasha:</b>", field_label_style))
+                story.append(Paragraph(pratyantardasha, field_value_style))
+                story.append(Spacer(1, 0.08*inch))
 
             # Add other astrology fields
             for field_key, field_label in [
@@ -229,9 +300,23 @@ class ReportGenerator:
             ]:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
-                    story.append(Paragraph(f"<b>{field_label}:</b> {value}", field_style))
+                    # Add field label
+                    story.append(Paragraph(f"<b>{field_label}:</b>", field_label_style))
 
-            story.append(Spacer(1, 0.2*inch))
+                    # Format value with bullets if multi-line
+                    items = format_value_with_bullets(value)
+                    if len(items) > 1:
+                        # Multiple items - use bullets
+                        for item in items:
+                            bullet_text = f"• {item}"
+                            story.append(Paragraph(bullet_text, field_value_style))
+                    else:
+                        # Single item - no bullet
+                        story.append(Paragraph(items[0], field_value_style))
+
+                    story.append(Spacer(1, 0.08*inch))
+
+            story.append(Spacer(1, 0.25*inch))
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
@@ -347,6 +432,23 @@ class ReportGenerator:
             pBdr.append(bottom)
             pPr.append(pBdr)
 
+        # Helper function to format multi-line values with bullet points
+        def format_value_with_bullets_docx(value):
+            """Format values that contain multiple lines or comma-separated items with bullets"""
+            if not value:
+                return []
+
+            # Check if value contains newlines or commas suggesting multiple items
+            if '\n' in value:
+                items = [item.strip() for item in value.split('\n') if item.strip()]
+            elif ',' in value and len(value) > 50:  # Only split by comma if text is long
+                items = [item.strip() for item in value.split(',') if item.strip()]
+            else:
+                # Single value, no bullets needed
+                return [value]
+
+            return items if len(items) > 1 else [value]
+
         # Helper function to add section (only if it has content)
         def add_section(title_text, fields):
             # Check if any field has a value
@@ -364,21 +466,39 @@ class ReportGenerator:
 
             # Add orange separation line
             add_orange_line()
+            doc.add_paragraph()  # Add spacing after line
 
             for field_key, field_label in fields:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
-                    p = doc.add_paragraph()
-                    # Bold label with Times New Roman
-                    label_run = p.add_run(f'{field_label}: ')
+                    # Add field label paragraph
+                    label_p = doc.add_paragraph()
+                    label_run = label_p.add_run(f'{field_label}:')
                     label_run.bold = True
                     label_run.font.name = 'Times New Roman'
                     label_run.font.size = Pt(11)
-                    # Value with Times New Roman
-                    value_run = p.add_run(str(value))
-                    value_run.font.name = 'Times New Roman'
-                    value_run.font.size = Pt(11)
-            doc.add_paragraph()
+                    label_run.font.color.rgb = RGBColor(51, 51, 51)  # Dark gray
+
+                    # Format value with bullets if multi-line
+                    items = format_value_with_bullets_docx(value)
+                    if len(items) > 1:
+                        # Multiple items - use bullets
+                        for item in items:
+                            p = doc.add_paragraph(item, style='List Bullet')
+                            for run in p.runs:
+                                run.font.name = 'Times New Roman'
+                                run.font.size = Pt(11)
+                    else:
+                        # Single item - no bullet
+                        p = doc.add_paragraph()
+                        value_run = p.add_run(items[0])
+                        value_run.font.name = 'Times New Roman'
+                        value_run.font.size = Pt(11)
+
+                    # Add spacing after each field
+                    doc.add_paragraph()
+
+            doc.add_paragraph()  # Extra spacing after section
 
         # ABOUT THE CLIENT
         add_section("ABOUT THE CLIENT", [
@@ -423,39 +543,52 @@ class ReportGenerator:
 
             # Add orange separation line
             add_orange_line()
+            doc.add_paragraph()  # Add spacing after line
 
             # Add Mahadasha
             if mahadasha:
-                p = doc.add_paragraph()
-                label_run = p.add_run('Mahadasha: ')
+                label_p = doc.add_paragraph()
+                label_run = label_p.add_run('Mahadasha:')
                 label_run.bold = True
                 label_run.font.name = 'Times New Roman'
                 label_run.font.size = Pt(11)
+                label_run.font.color.rgb = RGBColor(51, 51, 51)
+
+                p = doc.add_paragraph()
                 value_run = p.add_run(mahadasha)
                 value_run.font.name = 'Times New Roman'
                 value_run.font.size = Pt(11)
+                doc.add_paragraph()
 
             # Add Antardasha
             if antardasha:
-                p = doc.add_paragraph()
-                label_run = p.add_run('Antardasha: ')
+                label_p = doc.add_paragraph()
+                label_run = label_p.add_run('Antardasha:')
                 label_run.bold = True
                 label_run.font.name = 'Times New Roman'
                 label_run.font.size = Pt(11)
+                label_run.font.color.rgb = RGBColor(51, 51, 51)
+
+                p = doc.add_paragraph()
                 value_run = p.add_run(antardasha)
                 value_run.font.name = 'Times New Roman'
                 value_run.font.size = Pt(11)
+                doc.add_paragraph()
 
             # Add Pratyantardasha
             if pratyantardasha:
-                p = doc.add_paragraph()
-                label_run = p.add_run('Pratyantar Dasha: ')
+                label_p = doc.add_paragraph()
+                label_run = label_p.add_run('Pratyantar Dasha:')
                 label_run.bold = True
                 label_run.font.name = 'Times New Roman'
                 label_run.font.size = Pt(11)
+                label_run.font.color.rgb = RGBColor(51, 51, 51)
+
+                p = doc.add_paragraph()
                 value_run = p.add_run(pratyantardasha)
                 value_run.font.name = 'Times New Roman'
                 value_run.font.size = Pt(11)
+                doc.add_paragraph()
 
             # Add other astrology fields
             for field_key, field_label in [
@@ -473,16 +606,34 @@ class ReportGenerator:
             ]:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
-                    p = doc.add_paragraph()
-                    label_run = p.add_run(f'{field_label}: ')
+                    # Add field label paragraph
+                    label_p = doc.add_paragraph()
+                    label_run = label_p.add_run(f'{field_label}:')
                     label_run.bold = True
                     label_run.font.name = 'Times New Roman'
                     label_run.font.size = Pt(11)
-                    value_run = p.add_run(str(value))
-                    value_run.font.name = 'Times New Roman'
-                    value_run.font.size = Pt(11)
+                    label_run.font.color.rgb = RGBColor(51, 51, 51)
 
-            doc.add_paragraph()
+                    # Format value with bullets if multi-line
+                    items = format_value_with_bullets_docx(value)
+                    if len(items) > 1:
+                        # Multiple items - use bullets
+                        for item in items:
+                            p = doc.add_paragraph(item, style='List Bullet')
+                            for run in p.runs:
+                                run.font.name = 'Times New Roman'
+                                run.font.size = Pt(11)
+                    else:
+                        # Single item - no bullet
+                        p = doc.add_paragraph()
+                        value_run = p.add_run(items[0])
+                        value_run.font.name = 'Times New Roman'
+                        value_run.font.size = Pt(11)
+
+                    # Add spacing after each field
+                    doc.add_paragraph()
+
+            doc.add_paragraph()  # Extra spacing after section
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
