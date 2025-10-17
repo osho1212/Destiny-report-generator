@@ -4102,8 +4102,6 @@ function ReportForm({ darkTheme }) {
               {...register('reportType', { required: 'Please select a report format' })}
             >
               <option value="pdf">PDF Document</option>
-              <option value="docx">Word Document (.docx)</option>
-              <option value="excel">Excel Spreadsheet (.xlsx)</option>
             </select>
             {errors.reportType && <span className="error">{errors.reportType.message}</span>}
           </div>

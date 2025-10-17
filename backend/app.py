@@ -698,13 +698,11 @@ def generate_report():
         # Initialize report generator
         generator = ReportGenerator()
 
-        # Generate report based on type
+        # Generate report - only PDF is supported
         if report_type == 'pdf':
             file_path = generator.generate_pdf(form_data)
-        elif report_type == 'docx':
-            file_path = generator.generate_docx(form_data)
-        elif report_type == 'excel':
-            file_path = generator.generate_excel(form_data)
+        else:
+            return jsonify({'error': 'Only PDF export is supported'}), 400
 
         # Validate file exists
         if not os.path.exists(file_path):
@@ -728,7 +726,9 @@ def generate_report():
 
     except Exception as e:
         # Log error (in production, use proper logging)
+        import traceback
         print(f"Error generating report: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({'error': 'An error occurred while generating the report'}), 500
 
 @app.errorhandler(413)

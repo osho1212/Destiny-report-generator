@@ -176,6 +176,16 @@ class ReportGenerator:
 
             return items if len(items) > 1 else [value]
 
+        # Helper function to check if text already has bullet points
+        def has_bullet(text):
+            """Check if text starts with a bullet point"""
+            if not text:
+                return False
+            text = text.strip()
+            # Check for common bullet characters
+            bullet_chars = ['•', '◦', '○', '●', '▪', '▫', '–', '-', '*', '→']
+            return any(text.startswith(char) for char in bullet_chars) or (len(text) > 2 and text[0].isdigit() and text[1] in ['.', ')'])
+
         # Helper function to add section (only if it has content)
         def add_section(title, fields, keep_inline=False):
             # Check if any field has a value
@@ -186,7 +196,7 @@ class ReportGenerator:
 
             story.append(Paragraph(title, section_style))
 
-            # Add orange separation line under section title
+            # Add orange line under section title
             d = Drawing(6.5*inch, 2)
             line = Line(0, 1, 6.5*inch, 1)
             line.strokeColor = colors.HexColor('#ff8c00')
@@ -209,17 +219,22 @@ class ReportGenerator:
                         # Format value with bullets if multi-line
                         items = format_value_with_bullets(value)
                         if len(items) > 1:
-                            # Multiple items - use bullets
+                            # Multiple items - use bullets only if not already present
                             for item in items:
-                                bullet_text = f"• {item}"
-                                story.append(Paragraph(bullet_text, field_value_style))
+                                if has_bullet(item):
+                                    # Already has bullet, don't add another
+                                    story.append(Paragraph(item, field_value_style))
+                                else:
+                                    # Add bullet
+                                    bullet_text = f"• {item}"
+                                    story.append(Paragraph(bullet_text, field_value_style))
                         else:
                             # Single item - no bullet
                             story.append(Paragraph(items[0], field_value_style))
 
                     story.append(Spacer(1, 0.08*inch))
 
-            story.append(Spacer(1, 0.25*inch))
+            story.append(Spacer(1, 0.1*inch))
 
         # ABOUT THE CLIENT
         add_section("ABOUT THE CLIENT", [
@@ -257,7 +272,7 @@ class ReportGenerator:
         if has_astrology_content:
             story.append(Paragraph("ASTROLOGY", section_style))
 
-            # Add orange separation line under section title
+            # Add orange line under section title
             d = Drawing(6.5*inch, 2)
             line = Line(0, 1, 6.5*inch, 1)
             line.strokeColor = colors.HexColor('#ff8c00')
@@ -306,17 +321,22 @@ class ReportGenerator:
                     # Format value with bullets if multi-line
                     items = format_value_with_bullets(value)
                     if len(items) > 1:
-                        # Multiple items - use bullets
+                        # Multiple items - use bullets only if not already present
                         for item in items:
-                            bullet_text = f"• {item}"
-                            story.append(Paragraph(bullet_text, field_value_style))
+                            if has_bullet(item):
+                                # Already has bullet, don't add another
+                                story.append(Paragraph(item, field_value_style))
+                            else:
+                                # Add bullet
+                                bullet_text = f"• {item}"
+                                story.append(Paragraph(bullet_text, field_value_style))
                     else:
                         # Single item - no bullet
                         story.append(Paragraph(items[0], field_value_style))
 
                     story.append(Spacer(1, 0.08*inch))
 
-            story.append(Spacer(1, 0.25*inch))
+            story.append(Spacer(1, 0.1*inch))
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
@@ -361,6 +381,10 @@ class ReportGenerator:
         # If Kundli PDF is provided, merge specific pages (1, 3, 4) at the beginning
         kundli_pdf_data = form_data.get('kundliPdf')
         kundli_pages = [1, 3, 4]  # Pages to extract from Kundli PDF
+
+        print(f"Checking for Kundli PDF... Found: {bool(kundli_pdf_data)}")
+        if kundli_pdf_data:
+            print(f"Kundli PDF data starts with: {kundli_pdf_data[:50] if len(kundli_pdf_data) > 50 else kundli_pdf_data}")
 
         if kundli_pdf_data and kundli_pdf_data.startswith('data:application/pdf'):
             try:
@@ -432,6 +456,30 @@ class ReportGenerator:
             pBdr.append(bottom)
             pPr.append(pBdr)
 
+        # Helper function to add orange box borders around paragraphs
+        def add_orange_box_border(paragraph):
+            """Add orange box border around a paragraph"""
+            pPr = paragraph._element.get_or_add_pPr()
+            pBdr = OxmlElement('w:pBdr')
+
+            # Add borders on all sides
+            for border_side in ['top', 'left', 'bottom', 'right']:
+                border = OxmlElement(f'w:{border_side}')
+                border.set(qn('w:val'), 'single')
+                border.set(qn('w:sz'), '16')  # Border thickness
+                border.set(qn('w:space'), '4')
+                border.set(qn('w:color'), 'FF8C00')  # Orange color
+                pBdr.append(border)
+
+            pPr.append(pBdr)
+
+            # Add padding
+            pPr = paragraph._element.get_or_add_pPr()
+            spacing = OxmlElement('w:spacing')
+            spacing.set(qn('w:before'), '120')
+            spacing.set(qn('w:after'), '120')
+            pPr.append(spacing)
+
         # Helper function to format multi-line values with bullet points
         def format_value_with_bullets_docx(value):
             """Format values that contain multiple lines or comma-separated items with bullets"""
@@ -449,6 +497,16 @@ class ReportGenerator:
 
             return items if len(items) > 1 else [value]
 
+        # Helper function to check if text already has bullet points
+        def has_bullet_docx(text):
+            """Check if text starts with a bullet point"""
+            if not text:
+                return False
+            text = text.strip()
+            # Check for common bullet characters
+            bullet_chars = ['•', '◦', '○', '●', '▪', '▫', '–', '-', '*', '→']
+            return any(text.startswith(char) for char in bullet_chars) or (len(text) > 2 and text[0].isdigit() and text[1] in ['.', ')'])
+
         # Helper function to add section (only if it has content)
         def add_section(title_text, fields):
             # Check if any field has a value
@@ -457,48 +515,85 @@ class ReportGenerator:
             if not has_content:
                 return  # Skip empty sections
 
-            # Add section heading with Times New Roman and orange color
-            heading = doc.add_heading(title_text, level=1)
-            for run in heading.runs:
-                run.font.name = 'Times New Roman'
-                run.font.size = Pt(18)
-                run.font.color.rgb = RGBColor(255, 140, 0)  # Orange color
+            # Create a table to wrap the section with orange border
+            table = doc.add_table(rows=1, cols=1)
+            table.autofit = False
+            table.allow_autofit = False
 
-            # Add orange separation line
-            add_orange_line()
-            doc.add_paragraph()  # Add spacing after line
+            # Set table style with orange borders
+            tbl = table._element
+            tblPr = tbl._element.get_or_add_tblPr()
+            tblBorders = OxmlElement('w:tblBorders')
+            for border_name in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                border = OxmlElement(f'w:{border_name}')
+                border.set(qn('w:val'), 'single')
+                border.set(qn('w:sz'), '16')
+                border.set(qn('w:color'), 'FF8C00')
+                tblBorders.append(border)
+            tblPr.append(tblBorders)
 
+            # Get the cell
+            cell = table.rows[0].cells[0]
+
+            # Set cell margins (padding)
+            tcPr = cell._element.get_or_add_tcPr()
+            tcMar = OxmlElement('w:tcMar')
+            for margin_name in ['top', 'left', 'bottom', 'right']:
+                margin = OxmlElement(f'w:{margin_name}')
+                margin.set(qn('w:w'), '120')
+                margin.set(qn('w:type'), 'dxa')
+                tcMar.append(margin)
+            tcPr.append(tcMar)
+
+            # Add section heading
+            heading_p = cell.add_paragraph()
+            heading_run = heading_p.add_run(title_text)
+            heading_run.font.name = 'Times New Roman'
+            heading_run.font.size = Pt(18)
+            heading_run.font.color.rgb = RGBColor(255, 140, 0)
+            heading_run.font.bold = True
+
+            cell.add_paragraph()  # Add spacing
+
+            # Add fields
             for field_key, field_label in fields:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
-                    # Add field label paragraph
-                    label_p = doc.add_paragraph()
+                    # Add field label
+                    label_p = cell.add_paragraph()
                     label_run = label_p.add_run(f'{field_label}:')
                     label_run.bold = True
                     label_run.font.name = 'Times New Roman'
                     label_run.font.size = Pt(11)
-                    label_run.font.color.rgb = RGBColor(51, 51, 51)  # Dark gray
+                    label_run.font.color.rgb = RGBColor(51, 51, 51)
 
                     # Format value with bullets if multi-line
                     items = format_value_with_bullets_docx(value)
                     if len(items) > 1:
-                        # Multiple items - use bullets
+                        # Multiple items - use bullets only if not already present
                         for item in items:
-                            p = doc.add_paragraph(item, style='List Bullet')
-                            for run in p.runs:
-                                run.font.name = 'Times New Roman'
-                                run.font.size = Pt(11)
+                            if has_bullet_docx(item):
+                                # Already has bullet, add as plain paragraph
+                                p = cell.add_paragraph()
+                                value_run = p.add_run(item)
+                                value_run.font.name = 'Times New Roman'
+                                value_run.font.size = Pt(11)
+                            else:
+                                # Add bullet manually (style doesn't work well in table cells)
+                                p = cell.add_paragraph()
+                                bullet_run = p.add_run('• ' + item)
+                                bullet_run.font.name = 'Times New Roman'
+                                bullet_run.font.size = Pt(11)
                     else:
                         # Single item - no bullet
-                        p = doc.add_paragraph()
+                        p = cell.add_paragraph()
                         value_run = p.add_run(items[0])
                         value_run.font.name = 'Times New Roman'
                         value_run.font.size = Pt(11)
 
-                    # Add spacing after each field
-                    doc.add_paragraph()
+                    cell.add_paragraph()  # Add spacing after each field
 
-            doc.add_paragraph()  # Extra spacing after section
+            doc.add_paragraph()  # Minimal spacing after section
 
         # ABOUT THE CLIENT
         add_section("ABOUT THE CLIENT", [
@@ -534,61 +629,90 @@ class ReportGenerator:
         )
 
         if has_astrology_content:
-            # Add section heading with Times New Roman and orange color
-            heading = doc.add_heading("ASTROLOGY", level=1)
-            for run in heading.runs:
-                run.font.name = 'Times New Roman'
-                run.font.size = Pt(18)
-                run.font.color.rgb = RGBColor(255, 140, 0)  # Orange color
+            # Create a table to wrap the section with orange border
+            table = doc.add_table(rows=1, cols=1)
+            table.autofit = False
+            table.allow_autofit = False
 
-            # Add orange separation line
-            add_orange_line()
-            doc.add_paragraph()  # Add spacing after line
+            # Set table style with orange borders
+            tbl = table._element
+            tblPr = tbl._element.get_or_add_tblPr()
+            tblBorders = OxmlElement('w:tblBorders')
+            for border_name in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                border = OxmlElement(f'w:{border_name}')
+                border.set(qn('w:val'), 'single')
+                border.set(qn('w:sz'), '16')
+                border.set(qn('w:color'), 'FF8C00')
+                tblBorders.append(border)
+            tblPr.append(tblBorders)
+
+            # Get the cell
+            cell = table.rows[0].cells[0]
+
+            # Set cell margins (padding)
+            tcPr = cell._element.get_or_add_tcPr()
+            tcMar = OxmlElement('w:tcMar')
+            for margin_name in ['top', 'left', 'bottom', 'right']:
+                margin = OxmlElement(f'w:{margin_name}')
+                margin.set(qn('w:w'), '120')
+                margin.set(qn('w:type'), 'dxa')
+                tcMar.append(margin)
+            tcPr.append(tcMar)
+
+            # Add section heading
+            heading_p = cell.add_paragraph()
+            heading_run = heading_p.add_run("ASTROLOGY")
+            heading_run.font.name = 'Times New Roman'
+            heading_run.font.size = Pt(18)
+            heading_run.font.color.rgb = RGBColor(255, 140, 0)
+            heading_run.font.bold = True
+
+            cell.add_paragraph()  # Add spacing
 
             # Add Mahadasha
             if mahadasha:
-                label_p = doc.add_paragraph()
+                label_p = cell.add_paragraph()
                 label_run = label_p.add_run('Mahadasha:')
                 label_run.bold = True
                 label_run.font.name = 'Times New Roman'
                 label_run.font.size = Pt(11)
                 label_run.font.color.rgb = RGBColor(51, 51, 51)
 
-                p = doc.add_paragraph()
+                p = cell.add_paragraph()
                 value_run = p.add_run(mahadasha)
                 value_run.font.name = 'Times New Roman'
                 value_run.font.size = Pt(11)
-                doc.add_paragraph()
+                cell.add_paragraph()
 
             # Add Antardasha
             if antardasha:
-                label_p = doc.add_paragraph()
+                label_p = cell.add_paragraph()
                 label_run = label_p.add_run('Antardasha:')
                 label_run.bold = True
                 label_run.font.name = 'Times New Roman'
                 label_run.font.size = Pt(11)
                 label_run.font.color.rgb = RGBColor(51, 51, 51)
 
-                p = doc.add_paragraph()
+                p = cell.add_paragraph()
                 value_run = p.add_run(antardasha)
                 value_run.font.name = 'Times New Roman'
                 value_run.font.size = Pt(11)
-                doc.add_paragraph()
+                cell.add_paragraph()
 
             # Add Pratyantardasha
             if pratyantardasha:
-                label_p = doc.add_paragraph()
+                label_p = cell.add_paragraph()
                 label_run = label_p.add_run('Pratyantar Dasha:')
                 label_run.bold = True
                 label_run.font.name = 'Times New Roman'
                 label_run.font.size = Pt(11)
                 label_run.font.color.rgb = RGBColor(51, 51, 51)
 
-                p = doc.add_paragraph()
+                p = cell.add_paragraph()
                 value_run = p.add_run(pratyantardasha)
                 value_run.font.name = 'Times New Roman'
                 value_run.font.size = Pt(11)
-                doc.add_paragraph()
+                cell.add_paragraph()
 
             # Add other astrology fields
             for field_key, field_label in [
@@ -606,8 +730,8 @@ class ReportGenerator:
             ]:
                 value = self.sanitize_input(form_data.get(field_key, ''))
                 if value:
-                    # Add field label paragraph
-                    label_p = doc.add_paragraph()
+                    # Add field label
+                    label_p = cell.add_paragraph()
                     label_run = label_p.add_run(f'{field_label}:')
                     label_run.bold = True
                     label_run.font.name = 'Times New Roman'
@@ -617,23 +741,30 @@ class ReportGenerator:
                     # Format value with bullets if multi-line
                     items = format_value_with_bullets_docx(value)
                     if len(items) > 1:
-                        # Multiple items - use bullets
+                        # Multiple items - use bullets only if not already present
                         for item in items:
-                            p = doc.add_paragraph(item, style='List Bullet')
-                            for run in p.runs:
-                                run.font.name = 'Times New Roman'
-                                run.font.size = Pt(11)
+                            if has_bullet_docx(item):
+                                # Already has bullet, add as plain paragraph
+                                p = cell.add_paragraph()
+                                value_run = p.add_run(item)
+                                value_run.font.name = 'Times New Roman'
+                                value_run.font.size = Pt(11)
+                            else:
+                                # Add bullet manually (style doesn't work well in table cells)
+                                p = cell.add_paragraph()
+                                bullet_run = p.add_run('• ' + item)
+                                bullet_run.font.name = 'Times New Roman'
+                                bullet_run.font.size = Pt(11)
                     else:
                         # Single item - no bullet
-                        p = doc.add_paragraph()
+                        p = cell.add_paragraph()
                         value_run = p.add_run(items[0])
                         value_run.font.name = 'Times New Roman'
                         value_run.font.size = Pt(11)
 
-                    # Add spacing after each field
-                    doc.add_paragraph()
+                    cell.add_paragraph()  # Add spacing after each field
 
-            doc.add_paragraph()  # Extra spacing after section
+            doc.add_paragraph()  # Minimal spacing after section
 
         # ASTRO VASTU SOLUTION
         add_section("ASTRO VASTU SOLUTION", [
