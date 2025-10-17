@@ -193,11 +193,12 @@
 
 @media (max-width: 768px) {
   .preview-overlay {
-    padding: 10px;
+    padding: 5px;
   }
 
   .preview-modal {
     max-height: 95vh;
+    border-radius: 12px;
   }
 
   .preview-header {
@@ -205,32 +206,122 @@
   }
 
   .preview-header h2 {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .close-btn {
+    font-size: 28px;
+    width: 32px;
+    height: 32px;
   }
 
   .preview-content {
-    padding: 20px;
-  }
-
-  .preview-title {
-    font-size: 24px;
-  }
-
-  .preview-section {
     padding: 15px;
   }
 
+  .preview-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+
+  .preview-section {
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+
   .preview-section h3 {
-    font-size: 16px;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .field-label {
+    font-size: 13px;
+  }
+
+  .field-value {
+    font-size: 14px;
   }
 
   .preview-actions {
     flex-direction: column;
     padding: 15px 20px;
+    gap: 10px;
   }
 
   .btn-secondary,
   .btn-primary {
     width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  .preview-timestamp {
+    font-size: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+  }
+}
+
+/* Extra small devices (phones in portrait, less than 576px) */
+@media (max-width: 576px) {
+  .preview-overlay {
+    padding: 0;
+  }
+
+  .preview-modal {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .preview-header {
+    padding: 12px 15px;
+  }
+
+  .preview-header h2 {
+    font-size: 16px;
+  }
+
+  .close-btn {
+    font-size: 24px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .preview-content {
+    padding: 12px;
+  }
+
+  .preview-title {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .preview-section {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .preview-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .field-label {
+    font-size: 12px;
+  }
+
+  .field-value {
+    font-size: 13px;
+  }
+
+  .preview-actions {
+    padding: 12px 15px;
+  }
+
+  .btn-secondary,
+  .btn-primary {
+    padding: 12px 16px;
+    font-size: 14px;
   }
 }

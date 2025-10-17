@@ -97,18 +97,23 @@ body.dark-theme {
 }
 
 @media (max-width: 768px) {
+  .App {
+    max-width: 100%;
+  }
+
   .hero-section {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     padding: 0 10px;
   }
 
   .hero-container {
-    padding: 40px 25px;
+    padding: 35px 20px;
     border-radius: 20px;
   }
 
   .hero-title {
-    font-size: 2.2rem;
+    font-size: 2rem;
+    margin-bottom: 12px;
   }
 
   .hero-subtitle {
@@ -116,13 +121,50 @@ body.dark-theme {
   }
 
   .App-main {
-    padding: 20px;
+    padding: 15px;
+    border-radius: 15px;
   }
 
   .theme-toggle {
     top: 10px;
     right: 10px;
-    padding: 10px 20px;
+    padding: 10px 18px;
     font-size: 12px;
+  }
+}
+
+/* Extra small devices (phones in portrait, less than 576px) */
+@media (max-width: 576px) {
+  .hero-section {
+    margin-bottom: 20px;
+    padding: 0 5px;
+  }
+
+  .hero-container {
+    padding: 30px 15px;
+    border-radius: 15px;
+  }
+
+  .hero-title {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .App-main {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .theme-toggle {
+    top: 8px;
+    right: 8px;
+    padding: 8px 14px;
+    font-size: 11px;
+    border-radius: 20px;
   }
 }
