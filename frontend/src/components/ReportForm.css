@@ -326,69 +326,97 @@
   border: 1px solid #f5c6cb;
 }
 
-/* Glass Button Styles */
+/* 3D Glass Button Styles */
 .submit-btn {
   width: 100%;
   padding: 16px 32px;
-  background: linear-gradient(135deg,
-    rgba(30, 58, 138, 0.9) 0%,
-    rgba(59, 130, 246, 0.9) 100%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: transparent;
+  border: none;
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow:
-    0 8px 24px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 4px 12px rgba(30, 58, 138, 0.2);
   position: relative;
-  overflow: hidden;
+  perspective: 800px;
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.83, 0, 0.17, 1);
 }
 
 .submit-btn::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent);
-  transition: left 0.6s ease;
+  background: linear-gradient(135deg,
+    hsl(223, 90%, 60%) 0%,
+    hsl(208, 90%, 55%) 100%);
+  border-radius: 12px;
+  box-shadow: 0.5em -0.5em 1em hsla(223, 10%, 10%, 0.2);
+  transform: rotate(2deg);
+  transform-origin: 100% 100%;
+  transition: all 0.4s cubic-bezier(0.83, 0, 0.17, 1);
+  z-index: -1;
+}
+
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 0.1em hsla(0, 0%, 100%, 0.4) inset,
+    0 8px 24px rgba(65, 105, 225, 0.3);
+  transition: all 0.4s cubic-bezier(0.83, 0, 0.17, 1);
+  z-index: -1;
+}
+
+.submit-btn > * {
+  position: relative;
+  z-index: 1;
 }
 
 .submit-btn:hover:not(:disabled)::before {
-  left: 100%;
+  transform: rotate(4deg) translate3d(-0.5em, -0.5em, 1em);
+  box-shadow: 0.8em -0.8em 1.5em hsla(223, 10%, 10%, 0.25);
 }
 
-.submit-btn:hover:not(:disabled) {
-  transform: translateY(-3px);
+.submit-btn:hover:not(:disabled)::after {
+  transform: translateZ(2em);
   box-shadow:
-    0 12px 32px rgba(59, 130, 246, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 6px 20px rgba(30, 58, 138, 0.3);
-  border-color: rgba(255, 255, 255, 0.3);
+    0 0 0 0.15em hsla(0, 0%, 100%, 0.5) inset,
+    0 12px 32px rgba(65, 105, 225, 0.4);
 }
 
-.submit-btn:active:not(:disabled) {
-  transform: translateY(-1px);
+.submit-btn:active:not(:disabled)::before {
+  transform: rotate(3deg) translate3d(-0.3em, -0.3em, 0.5em);
+}
+
+.submit-btn:active:not(:disabled)::after {
+  transform: translateZ(1em);
   box-shadow:
-    0 4px 16px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 0 0 0.1em hsla(0, 0%, 100%, 0.3) inset,
+    0 6px 20px rgba(65, 105, 225, 0.3);
 }
 
 .submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.submit-btn:disabled::before,
+.submit-btn:disabled::after {
   transform: none;
 }
 
@@ -559,15 +587,11 @@
   flex-shrink: 0;
 }
 
-/* Glass Aspect Buttons */
+/* 3D Glass Aspect Buttons */
 .aspect-btn {
-  background: linear-gradient(135deg,
-    rgba(30, 64, 175, 0.9) 0%,
-    rgba(37, 99, 235, 0.9) 100%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: transparent;
+  border: none;
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -576,27 +600,66 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: bold;
   flex-shrink: 0;
-  box-shadow:
-    0 4px 12px rgba(30, 64, 175, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  perspective: 200px;
+  transform-style: preserve-3d;
+  transition: all 0.3s cubic-bezier(0.83, 0, 0.17, 1);
 }
 
-.aspect-btn:hover {
-  transform: scale(1.1);
-  box-shadow:
-    0 6px 16px rgba(30, 64, 175, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.3);
+.aspect-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, hsl(223, 90%, 60%), hsl(208, 90%, 55%));
+  border-radius: 50%;
+  box-shadow: 0.3em -0.3em 0.5em hsla(223, 10%, 10%, 0.15);
+  transform: rotate(10deg);
+  transform-origin: 100% 100%;
+  transition: all 0.3s cubic-bezier(0.83, 0, 0.17, 1);
+  z-index: -1;
 }
 
-.aspect-btn:active {
-  transform: scale(0.95);
-  box-shadow:
-    0 2px 8px rgba(30, 64, 175, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+.aspect-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.1em hsla(0, 0%, 100%, 0.3) inset;
+  transition: all 0.3s cubic-bezier(0.83, 0, 0.17, 1);
+  z-index: -1;
+}
+
+.aspect-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.aspect-btn:hover::before {
+  transform: rotate(15deg) translate3d(-0.2em, -0.2em, 0.3em);
+}
+
+.aspect-btn:hover::after {
+  transform: translateZ(0.8em);
+  box-shadow: 0 0 0 0.15em hsla(0, 0%, 100%, 0.4) inset;
+}
+
+.aspect-btn:active::before {
+  transform: rotate(12deg) translate3d(-0.1em, -0.1em, 0.15em);
+}
+
+.aspect-btn:active::after {
+  transform: translateZ(0.4em);
 }
 
 .aspect-btn-mini {
@@ -635,19 +698,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-.aspect-btn-remove {
-  background: linear-gradient(135deg,
-    rgba(231, 76, 60, 0.9) 0%,
-    rgba(239, 68, 68, 0.9) 100%);
+.aspect-btn-remove::before {
+  background: linear-gradient(135deg, hsl(3, 90%, 55%), hsl(348, 90%, 50%));
 }
 
-.aspect-btn-remove:hover {
-  background: linear-gradient(135deg,
-    rgba(192, 57, 43, 0.95) 0%,
-    rgba(220, 38, 38, 0.95) 100%);
-  box-shadow:
-    0 4px 12px rgba(231, 76, 60, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+.aspect-btn-remove::after {
+  background: rgba(255, 200, 200, 0.15);
 }
 
 .aspect-section-label {
