@@ -650,20 +650,25 @@
   border-bottom-color: #ff8c00;
 }
 
+/* Mobile Styles - iOS/Mobile Standards Compliant */
 @media (max-width: 768px) {
+  /* Safe area support for notched devices */
   .report-form {
     max-width: 100%;
-    padding: 10px;
+    padding: max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    padding-top: max(10px, env(safe-area-inset-top));
   }
 
   .form-section {
-    padding: 15px;
-    margin-bottom: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 12px; /* iOS standard corner radius */
   }
 
   .form-section h2 {
-    font-size: 16px;
-    margin-bottom: 15px;
+    font-size: 17px; /* iOS standard heading size */
+    margin-bottom: 16px;
+    font-weight: 600;
   }
 
   .form-row {
@@ -672,16 +677,32 @@
   }
 
   .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
   }
 
+  .form-group label {
+    font-size: 15px; /* iOS standard label size */
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* All interactive elements: 44px minimum touch target (iOS HIG) */
   .form-group input,
   .form-group textarea,
   .form-group select {
     font-size: 16px; /* Prevents zoom on iOS */
-    padding: 12px;
+    padding: 12px 16px;
     width: 100%;
     box-sizing: border-box;
+    min-height: 44px;
+    border-radius: 10px; /* iOS standard input radius */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .form-group textarea {
+    min-height: 88px; /* 2x touch target */
+    resize: vertical;
   }
 
   /* Fix for date and time inputs on mobile */
@@ -689,16 +710,28 @@
   .form-group input[type="time"] {
     width: 100%;
     max-width: 100%;
+    min-height: 44px;
+  }
+
+  /* Select dropdowns */
+  .form-group select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
   }
 
   .dasha-group {
-    padding: 15px;
-    margin-bottom: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 12px;
   }
 
   .dasha-label {
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 12px;
+    font-weight: 600;
   }
 
   .dasha-fields {
@@ -706,10 +739,18 @@
     gap: 12px;
   }
 
+  .dasha-field label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
   .dasha-field input,
   .dasha-field select {
     font-size: 16px;
-    padding: 12px;
+    padding: 12px 16px;
+    min-height: 44px;
+    border-radius: 10px;
+    -webkit-appearance: none;
   }
 
   .period-group {
@@ -725,122 +766,266 @@
     width: 100%;
   }
 
+  .period-field label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
   .period-field input[type="date"] {
     width: 100%;
     font-size: 16px;
-    padding: 12px;
+    padding: 12px 16px;
+    min-height: 44px;
+    border-radius: 10px;
   }
 
+  /* Aspects section */
   .aspect-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .aspect-select {
     width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
   }
 
   .aspect-label {
-    text-align: center;
+    text-align: left;
     width: 100%;
-    margin: 8px 0;
+    margin: 12px 0;
+    font-size: 15px;
+    font-weight: 500;
   }
 
   .aspect-btn {
     width: 100%;
-    border-radius: 6px;
-    margin-top: 10px;
+    min-height: 44px;
+    border-radius: 10px;
+    margin-top: 8px;
+    font-size: 16px;
+    font-weight: 600;
   }
 
-  /* Larger touch targets for mobile */
+  /* Touch targets - iOS minimum 44x44 */
   .aspect-btn-mini {
     min-width: 44px;
     min-height: 44px;
     width: 44px;
     height: 44px;
     font-size: 18px;
+    border-radius: 8px;
   }
 
   .aspect-btn-tiny {
-    min-width: 40px;
-    min-height: 40px;
-    width: 40px;
-    height: 40px;
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
     font-size: 16px;
+    border-radius: 8px;
   }
 
   .aspect-select-small {
     min-height: 44px;
-    padding: 10px;
+    padding: 10px 16px;
     font-size: 16px;
+    border-radius: 8px;
   }
 
+  /* Buttons */
   .submit-btn {
     width: 100%;
-    padding: 15px;
-    font-size: 16px;
+    min-height: 50px;
+    padding: 14px 16px;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-top: 8px;
+    margin-bottom: max(8px, env(safe-area-inset-bottom));
   }
 
+  /* Checkboxes and radio buttons */
   .checkbox-group {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 0;
+    font-size: 15px;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 22px;
+    min-height: 22px;
+    margin-right: 12px;
+  }
+
+  /* Messages and feedback */
   .message {
-    font-size: 14px;
-    padding: 12px;
+    font-size: 15px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: 12px 0;
   }
 
+  /* File upload */
   .file-upload-btn,
   .file-upload-label {
     width: 100%;
-    padding: 12px;
-    font-size: 14px;
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 10px;
+    font-weight: 500;
   }
 
   .uploaded-file {
-    font-size: 13px;
-    padding: 8px;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin: 8px 0;
   }
 
   .remove-file-btn {
+    min-height: 32px;
     padding: 6px 12px;
-    font-size: 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    font-weight: 500;
   }
 
+  /* House map */
   .house-map-preview {
     max-width: 100%;
+    border-radius: 12px;
   }
 
   .house-map-item {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 12px;
   }
 
   .room-inputs {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 12px;
+  }
+
+  /* Improve tap feedback */
+  button,
+  select,
+  input[type="submit"],
+  input[type="button"] {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
+  }
+
+  /* Smooth scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Aspects Modal on Mobile */
+  .aspects-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .aspects-modal-content {
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 20px 20px 0 0;
+    margin: 0;
+  }
+
+  .aspects-modal-header {
+    padding: 16px 20px;
+    min-height: 60px;
+  }
+
+  .aspects-modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .aspects-modal-close {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+  }
+
+  .aspects-modal-body {
+    padding: 20px 16px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .aspects-modal-section {
+    margin-bottom: 24px;
+  }
+
+  .aspects-modal-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .aspects-modal-footer {
+    padding: 16px 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .aspects-modal-done-btn {
+    width: 100%;
+    min-height: 50px;
+    padding: 14px 24px;
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 12px;
+  }
+
+  .aspect-container {
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
   }
 }
 
 /* Extra small devices (phones in portrait, less than 576px) */
 @media (max-width: 576px) {
   .report-form {
-    padding: 5px;
+    padding: max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    padding-top: max(8px, env(safe-area-inset-top));
   }
 
   .form-section {
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border-radius: 12px;
   }
 
   .form-section h2 {
-    font-size: 14px;
-    margin-bottom: 12px;
+    font-size: 16px;
+    margin-bottom: 14px;
+    font-weight: 600;
   }
 
   .form-group label {
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
   }
 
   .dasha-group {
