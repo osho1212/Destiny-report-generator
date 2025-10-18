@@ -5,6 +5,56 @@ import ReportPreview from './ReportPreview';
 import ShinyText from './ShinyText';
 import './ReportForm.css';
 
+let pdfjsLibPromise = null;
+
+const loadPdfJs = async () => {
+  if (!pdfjsLibPromise) {
+    pdfjsLibPromise = Promise.all([
+      import('pdfjs-dist/build/pdf'),
+      import('pdfjs-dist/build/pdf.worker.entry')
+    ]).then(([pdfjsLib, pdfjsWorker]) => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+      return pdfjsLib;
+    }).catch(error => {
+      console.error('Failed to load pdfjs library:', error);
+      return null;
+    });
+  }
+  return pdfjsLibPromise;
+};
+
+const renderPdfToImages = async (file) => {
+  try {
+    const pdfjsLib = await loadPdfJs();
+    if (!pdfjsLib) {
+      return [];
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDocument = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const images = [];
+    const maxPages = Math.min(pdfDocument.numPages, 12);
+
+    for (let pageNum = 1; pageNum <= maxPages; pageNum += 1) {
+      const page = await pdfDocument.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.3 });
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({ canvasContext: context, viewport }).promise;
+      images.push(canvas.toDataURL('image/png'));
+    }
+
+    return images;
+  } catch (error) {
+    console.error('Error rendering PDF to images:', error);
+    return [];
+  }
+};
+
 // Planet donation information - moved outside component to avoid re-creation
 const planetDonationInfo = {
     'Sun': {
@@ -730,9 +780,10 @@ function ReportForm({ darkTheme }) {
   const getInitialKundliPosition = () => {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
+      const width = Math.min(window.innerWidth - 20, 400);
       return {
-        x: 10,
-        y: 50
+        x: Math.max(8, (window.innerWidth - width) / 2),
+        y: 60
       };
     }
     return { x: 100, y: 100 };
@@ -753,7 +804,23 @@ function ReportForm({ darkTheme }) {
   // House Map state - array to support multiple maps with analysis
   const [houseMaps, setHouseMaps] = useState([]);
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+  const isMobile = viewportWidth <= 768;
+
+  const getViewerWidth = () => {
+    if (typeof window === 'undefined') {
+      return kundliSize.width;
+    }
+    return Math.min(kundliSize.width, window.innerWidth - 16);
+  };
+
+  const getViewerHeight = () => {
+    if (typeof window === 'undefined') {
+      return kundliSize.height;
+    }
+    return Math.min(kundliSize.height, window.innerHeight - 32);
+  };
 
   // Modal state for viewing maps
   const [viewingMap, setViewingMap] = useState(null);
@@ -1829,32 +1896,10 @@ function ReportForm({ darkTheme }) {
 
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
-      // Convert PDF to images for mobile viewing
+      // Convert PDF to images for mobile viewing (client-side for smoother UX)
       if (window.innerWidth <= 768) {
-        try {
-          const convertFormData = new FormData();
-          convertFormData.append('file', file);
-
-          const convertResponse = await fetch(`${API_URL}/convert-pdf-to-image`, {
-            method: 'POST',
-            body: convertFormData
-          });
-
-          if (convertResponse.ok) {
-            const convertResult = await convertResponse.json();
-            if (convertResult.success && Array.isArray(convertResult.images)) {
-              setKundliPdfImages(convertResult.images);
-            } else {
-              setKundliPdfImages([]);
-            }
-          } else {
-            console.error('Failed to convert PDF to images:', await convertResponse.text());
-            setKundliPdfImages([]);
-          }
-        } catch (error) {
-          console.error('Error converting PDF to images:', error);
-          setKundliPdfImages([]);
-        }
+        const images = await renderPdfToImages(file);
+        setKundliPdfImages(images);
       } else {
         setKundliPdfImages([]);
       }
@@ -1913,14 +1958,18 @@ function ReportForm({ darkTheme }) {
 
   const handleMouseMove = (e) => {
     if (isDragging) {
+      const maxX = Math.max(0, window.innerWidth - getViewerWidth());
+      const maxY = Math.max(0, window.innerHeight - getViewerHeight());
       setKundliPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
+        x: Math.min(Math.max(e.clientX - dragStart.x, 0), maxX),
+        y: Math.min(Math.max(e.clientY - dragStart.y, 0), maxY)
       });
     }
     if (isResizing) {
-      const newWidth = Math.max(150, resizeStart.width + (e.clientX - resizeStart.x));
-      const newHeight = Math.max(150, resizeStart.height + (e.clientY - resizeStart.y));
+      const maxWidth = Math.max(240, window.innerWidth - 16);
+      const maxHeight = Math.max(240, window.innerHeight - 32);
+      const newWidth = Math.min(Math.max(150, resizeStart.width + (e.clientX - resizeStart.x)), maxWidth);
+      const newHeight = Math.min(Math.max(150, resizeStart.height + (e.clientY - resizeStart.y)), maxHeight);
       setKundliSize({ width: newWidth, height: newHeight });
     }
   };
@@ -1958,14 +2007,18 @@ function ReportForm({ darkTheme }) {
       e.preventDefault(); // Prevent scrolling while dragging/resizing
       const touch = e.touches[0];
       if (isDragging) {
+        const maxX = Math.max(0, window.innerWidth - getViewerWidth());
+        const maxY = Math.max(0, window.innerHeight - getViewerHeight());
         setKundliPosition({
-          x: touch.clientX - dragStart.x,
-          y: touch.clientY - dragStart.y
+          x: Math.min(Math.max(touch.clientX - dragStart.x, 0), maxX),
+          y: Math.min(Math.max(touch.clientY - dragStart.y, 0), maxY)
         });
       }
       if (isResizing) {
-        const newWidth = Math.max(150, resizeStart.width + (touch.clientX - resizeStart.x));
-        const newHeight = Math.max(150, resizeStart.height + (touch.clientY - resizeStart.y));
+        const maxWidth = Math.max(240, window.innerWidth - 16);
+        const maxHeight = Math.max(240, window.innerHeight - 32);
+        const newWidth = Math.min(Math.max(150, resizeStart.width + (touch.clientX - resizeStart.x)), maxWidth);
+        const newHeight = Math.min(Math.max(150, resizeStart.height + (touch.clientY - resizeStart.y)), maxHeight);
         setKundliSize({ width: newWidth, height: newHeight });
       }
     }
@@ -1992,7 +2045,7 @@ function ReportForm({ darkTheme }) {
     if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('touchend', handleTouchEnd);
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
@@ -2357,6 +2410,11 @@ function ReportForm({ darkTheme }) {
     setShowPreview(false);
   };
 
+  const viewerWidth = getViewerWidth();
+  const viewerHeight = getViewerHeight();
+  const clampedX = Math.min(Math.max(kundliPosition.x, 0), Math.max(0, viewportWidth - viewerWidth));
+  const clampedY = Math.min(Math.max(kundliPosition.y, 0), Math.max(0, viewportHeight - viewerHeight));
+
   return (
     <div className={`report-form ${darkTheme ? 'dark-theme' : ''}`}>
       {/* Kundli PDF Upload Button */}
@@ -2410,23 +2468,22 @@ function ReportForm({ darkTheme }) {
         <div
           style={{
             position: 'fixed',
-            left: isMobile ? '50%' : `${kundliPosition.x}px`,
-            top: isMobile ? '40px' : `${kundliPosition.y}px`,
-            transform: isMobile ? 'translateX(-50%)' : 'none',
-            width: isMobile ? 'calc(100vw - 24px)' : `${kundliSize.width}px`,
-            height: isMobile ? 'calc(100vh - 100px)' : `${kundliSize.height}px`,
+            left: `${clampedX}px`,
+            top: `${clampedY}px`,
+            width: `${viewerWidth}px`,
+            height: `${viewerHeight}px`,
             backgroundColor: 'white',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+            boxShadow: '0 12px 46px rgba(15, 23, 42, 0.35)',
             borderRadius: '12px',
             zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
-            overflow: isMobile ? 'auto' : 'hidden',
-            touchAction: isMobile ? 'auto' : 'none',
+            overflow: 'hidden',
+            touchAction: 'auto',
             userSelect: 'none'
           }}
-          onMouseDown={!isMobile ? handleMouseDown : undefined}
-          onTouchStart={!isMobile ? handleTouchStart : undefined}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
         >
           {/* Header */}
           <div
@@ -2435,12 +2492,12 @@ function ReportForm({ darkTheme }) {
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
               color: 'white',
               padding: isMobile ? '16px' : '12px 16px',
-              cursor: !isMobile ? 'move' : 'default',
+              cursor: 'move',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               userSelect: 'none',
-              touchAction: isMobile ? 'auto' : 'none',
+              touchAction: 'none',
               minHeight: isMobile ? '50px' : 'auto'
             }}
           >
@@ -2501,8 +2558,8 @@ function ReportForm({ darkTheme }) {
             style={{
               flex: 1,
               overflow: 'auto',
-              padding: isMobile ? '0' : '10px',
-              backgroundColor: isMobile ? '#ffffff' : '#f3f4f6',
+              padding: '10px',
+              backgroundColor: '#f3f4f6',
               position: 'relative',
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain'
@@ -2510,9 +2567,9 @@ function ReportForm({ darkTheme }) {
           >
             {isMobile && kundliPdfImages.length > 0 ? (
               // Mobile: Display PDF pages as images for better scrolling
-              <div style={{ padding: '10px' }}>
+              <div style={{ padding: 0 }}>
                 {kundliPdfImages.map((imageUrl, index) => (
-                  <div key={index} style={{ marginBottom: '10px' }}>
+                  <div key={index} style={{ marginBottom: '12px' }}>
                     <img
                       src={imageUrl}
                       alt={`Kundli Page ${index + 1}`}
@@ -2520,8 +2577,9 @@ function ReportForm({ darkTheme }) {
                         width: '100%',
                         height: 'auto',
                         display: 'block',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '4px'
+                        border: '1px solid #dbeafe',
+                        borderRadius: '12px',
+                        boxShadow: '0 6px 18px rgba(15, 23, 42, 0.18)'
                       }}
                     />
                     <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '12px', marginTop: '5px' }}>
@@ -2545,25 +2603,23 @@ function ReportForm({ darkTheme }) {
               />
             )}
 
-            {/* Resize Handle - Desktop only */}
-            {!isMobile && (
-              <div
-                onMouseDown={handleResizeMouseDown}
-                onTouchStart={handleResizeTouchStart}
-                className="kundli-resize-handle"
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                  width: '20px',
-                  height: '20px',
-                  cursor: 'nwse-resize',
-                  background: 'linear-gradient(135deg, transparent 50%, #1e3a8a 50%)',
-                  borderBottomRightRadius: '12px',
-                  touchAction: 'none'
-                }}
-              />
-            )}
+            {/* Resize Handle */}
+            <div
+              onMouseDown={handleResizeMouseDown}
+              onTouchStart={handleResizeTouchStart}
+              className="kundli-resize-handle"
+              style={{
+                position: 'absolute',
+                bottom: 4,
+                right: 4,
+                width: isMobile ? '28px' : '20px',
+                height: isMobile ? '28px' : '20px',
+                cursor: 'nwse-resize',
+                background: 'linear-gradient(135deg, transparent 50%, rgba(30, 58, 138, 0.9) 50%)',
+                borderBottomRightRadius: '12px',
+                touchAction: 'none'
+              }}
+            />
           </div>
         </div>
       )}
