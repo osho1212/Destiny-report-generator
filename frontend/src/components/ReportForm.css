@@ -1231,9 +1231,27 @@
 
   input[type="checkbox"],
   input[type="radio"] {
+    position: relative;
     min-width: 22px;
     min-height: 22px;
     margin-right: 12px;
+    cursor: pointer;
+    -webkit-appearance: auto;
+    appearance: auto;
+    touch-action: manipulation;
+    flex-shrink: 0;
+  }
+
+  /* Ensure labels with checkboxes are tappable */
+  .checkbox-group label,
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]) {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    user-select: none;
   }
 
   /* Messages and feedback */

@@ -752,6 +752,8 @@ function ReportForm({ darkTheme }) {
   // House Map state - array to support multiple maps with analysis
   const [houseMaps, setHouseMaps] = useState([]);
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   // Modal state for viewing maps
   const [viewingMap, setViewingMap] = useState(null);
   const [mapZoom, setMapZoom] = useState(1);
@@ -2375,22 +2377,23 @@ function ReportForm({ darkTheme }) {
         <div
           style={{
             position: 'fixed',
-            left: `${kundliPosition.x}px`,
-            top: `${kundliPosition.y}px`,
-            width: `${kundliSize.width}px`,
-            height: `${kundliSize.height}px`,
+            left: isMobile ? '50%' : `${kundliPosition.x}px`,
+            top: isMobile ? '40px' : `${kundliPosition.y}px`,
+            transform: isMobile ? 'translateX(-50%)' : 'none',
+            width: isMobile ? 'calc(100vw - 24px)' : `${kundliSize.width}px`,
+            height: isMobile ? 'calc(100vh - 100px)' : `${kundliSize.height}px`,
             backgroundColor: 'white',
             boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
             borderRadius: '12px',
             zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
-            touchAction: window.innerWidth <= 768 ? 'auto' : 'none',
+            overflow: isMobile ? 'auto' : 'hidden',
+            touchAction: isMobile ? 'auto' : 'none',
             userSelect: 'none'
           }}
-          onMouseDown={window.innerWidth > 768 ? handleMouseDown : undefined}
-          onTouchStart={window.innerWidth > 768 ? handleTouchStart : undefined}
+          onMouseDown={!isMobile ? handleMouseDown : undefined}
+          onTouchStart={!isMobile ? handleTouchStart : undefined}
         >
           {/* Header */}
           <div
@@ -2398,14 +2401,14 @@ function ReportForm({ darkTheme }) {
             style={{
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
               color: 'white',
-              padding: window.innerWidth <= 768 ? '16px' : '12px 16px',
-              cursor: window.innerWidth > 768 ? 'move' : 'default',
+              padding: isMobile ? '16px' : '12px 16px',
+              cursor: !isMobile ? 'move' : 'default',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               userSelect: 'none',
-              touchAction: window.innerWidth <= 768 ? 'auto' : 'none',
-              minHeight: window.innerWidth <= 768 ? '50px' : 'auto'
+              touchAction: isMobile ? 'auto' : 'none',
+              minHeight: isMobile ? '50px' : 'auto'
             }}
           >
             <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Kundli PDF</span>
@@ -2465,8 +2468,8 @@ function ReportForm({ darkTheme }) {
             style={{
               flex: 1,
               overflow: 'auto',
-              padding: '10px',
-              backgroundColor: '#f3f4f6',
+              padding: isMobile ? '0' : '10px',
+              backgroundColor: isMobile ? '#ffffff' : '#f3f4f6',
               position: 'relative',
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain'
@@ -2475,9 +2478,9 @@ function ReportForm({ darkTheme }) {
             <iframe
               src={kundliPdf}
               style={{
-                width: `${100 / kundliZoom}%`,
-                height: `${100 / kundliZoom}%`,
-                transform: `scale(${kundliZoom})`,
+                width: isMobile ? '100%' : `${100 / kundliZoom}%`,
+                height: isMobile ? '100%' : `${100 / kundliZoom}%`,
+                transform: isMobile ? 'none' : `scale(${kundliZoom})`,
                 transformOrigin: 'top left',
                 border: 'none'
               }}
@@ -2485,7 +2488,7 @@ function ReportForm({ darkTheme }) {
             />
 
             {/* Resize Handle - Desktop only */}
-            {window.innerWidth > 768 && (
+            {!isMobile && (
               <div
                 onMouseDown={handleResizeMouseDown}
                 onTouchStart={handleResizeTouchStart}
