@@ -2458,6 +2458,15 @@ function ReportForm({ darkTheme }) {
   const clampedX = Math.min(Math.max(kundliPosition.x, 0), Math.max(0, viewportWidth - viewerWidth));
   const clampedY = Math.min(Math.max(kundliPosition.y, 0), Math.max(0, viewportHeight - viewerHeight));
 
+  const toggleKundliViewer = () => {
+    if (showKundliViewer) {
+      setShowKundliViewer(false);
+    } else {
+      setKundliPosition(getInitialKundliPosition({ width: viewerWidth, height: viewerHeight }));
+      setShowKundliViewer(true);
+    }
+  };
+
   return (
     <div className={`report-form ${darkTheme ? 'dark-theme' : ''}`}>
       {/* Kundli PDF Upload Button */}
@@ -2477,14 +2486,16 @@ function ReportForm({ darkTheme }) {
         />
         {kundliPdf && (
           <>
-            <button
-              type="button"
-              onClick={() => setShowKundliViewer(true)}
-              className="liquid-blue-btn"
-              style={{ marginLeft: '10px' }}
-            >
-              👁️ View Kundli
-            </button>
+            {!isMobile && (
+              <button
+                type="button"
+                onClick={() => setShowKundliViewer(true)}
+                className="liquid-blue-btn"
+                style={{ marginLeft: '10px' }}
+              >
+                👁️ View Kundli
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -2665,6 +2676,17 @@ function ReportForm({ darkTheme }) {
             />
           </div>
         </div>
+      )}
+
+      {isMobile && kundliPdf && (
+        <button
+          type="button"
+          className="mobile-kundli-toggle"
+          onClick={toggleKundliViewer}
+          aria-label={showKundliViewer ? 'Hide Kundli viewer' : 'Show Kundli viewer'}
+        >
+          {showKundliViewer ? 'Hide Kundli' : 'View Kundli'}
+        </button>
       )}
 
       <form onSubmit={handleSubmit(onPreview)}>

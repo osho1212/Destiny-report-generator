@@ -501,6 +501,50 @@
   -webkit-text-fill-color: #e5ecff;
 }
 
+.mobile-kundli-toggle {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  border: 1px solid rgba(86, 114, 255, 0.45);
+  background: linear-gradient(135deg, rgba(90, 120, 255, 0.96), rgba(48, 74, 220, 0.9));
+  color: #f4f7ff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: 0 12px 32px rgba(32, 55, 170, 0.32);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 11000;
+  cursor: pointer;
+  display: none;
+}
+
+.mobile-kundli-toggle:hover {
+  box-shadow: 0 18px 40px rgba(32, 55, 170, 0.38);
+}
+
+.report-form.dark-theme .mobile-kundli-toggle {
+  border-color: rgba(148, 172, 255, 0.45);
+  background: linear-gradient(135deg, rgba(34, 52, 120, 0.92), rgba(22, 41, 95, 0.9));
+  color: #e5ecff;
+  box-shadow: 0 16px 40px rgba(8, 16, 48, 0.55);
+}
+
+.report-form.dark-theme .mobile-kundli-toggle:hover {
+  box-shadow: 0 20px 48px rgba(8, 16, 48, 0.6);
+}
+
+@media (max-width: 768px) {
+  .mobile-kundli-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+
 /* Dark Theme Glassmorphism Styles */
 .report-form.dark-theme {
   color: #e0e0e0;
