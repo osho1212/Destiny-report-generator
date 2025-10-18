@@ -1885,8 +1885,8 @@ function ReportForm({ darkTheme }) {
       });
     }
     if (isResizing) {
-      const newWidth = Math.max(300, resizeStart.width + (e.clientX - resizeStart.x));
-      const newHeight = Math.max(300, resizeStart.height + (e.clientY - resizeStart.y));
+      const newWidth = Math.max(150, resizeStart.width + (e.clientX - resizeStart.x));
+      const newHeight = Math.max(150, resizeStart.height + (e.clientY - resizeStart.y));
       setKundliSize({ width: newWidth, height: newHeight });
     }
   };
@@ -1921,6 +1921,7 @@ function ReportForm({ darkTheme }) {
 
   const handleTouchMove = (e) => {
     if (isDragging || isResizing) {
+      e.preventDefault(); // Prevent scrolling while dragging/resizing
       const touch = e.touches[0];
       if (isDragging) {
         setKundliPosition({
@@ -1929,8 +1930,8 @@ function ReportForm({ darkTheme }) {
         });
       }
       if (isResizing) {
-        const newWidth = Math.max(300, resizeStart.width + (touch.clientX - resizeStart.x));
-        const newHeight = Math.max(300, resizeStart.height + (touch.clientY - resizeStart.y));
+        const newWidth = Math.max(150, resizeStart.width + (touch.clientX - resizeStart.x));
+        const newHeight = Math.max(150, resizeStart.height + (touch.clientY - resizeStart.y));
         setKundliSize({ width: newWidth, height: newHeight });
       }
     }
@@ -2411,7 +2412,9 @@ function ReportForm({ darkTheme }) {
             zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            touchAction: 'none',
+            userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
@@ -2422,12 +2425,14 @@ function ReportForm({ darkTheme }) {
             style={{
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
               color: 'white',
-              padding: '12px 16px',
+              padding: window.innerWidth <= 768 ? '16px' : '12px 16px',
               cursor: 'move',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              userSelect: 'none'
+              userSelect: 'none',
+              touchAction: 'none',
+              minHeight: window.innerWidth <= 768 ? '50px' : 'auto'
             }}
           >
             <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Kundli PDF</span>
@@ -2508,15 +2513,17 @@ function ReportForm({ darkTheme }) {
             <div
               onMouseDown={handleResizeMouseDown}
               onTouchStart={handleResizeTouchStart}
+              className="kundli-resize-handle"
               style={{
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                width: '20px',
-                height: '20px',
+                width: window.innerWidth <= 768 ? '40px' : '20px',
+                height: window.innerWidth <= 768 ? '40px' : '20px',
                 cursor: 'nwse-resize',
                 background: 'linear-gradient(135deg, transparent 50%, #1e3a8a 50%)',
-                borderBottomRightRadius: '12px'
+                borderBottomRightRadius: '12px',
+                touchAction: 'none'
               }}
             />
           </div>
