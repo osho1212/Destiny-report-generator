@@ -3,11 +3,12 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.graphics.shapes import Drawing, Line
+from PIL import Image as PILImage
 from openpyxl import Workbook
 from jinja2 import Template
 from datetime import datetime
@@ -27,6 +28,49 @@ class ReportGenerator:
         if not text:
             return ''
         return html.escape(str(text))
+
+    def base64_to_image(self, base64_string, max_width=6*inch):
+        """Convert base64 string to reportlab Image object"""
+        try:
+            # Remove data URL prefix if present
+            if ',' in base64_string:
+                base64_string = base64_string.split(',')[1]
+
+            # Decode base64
+            image_data = base64.b64decode(base64_string)
+
+            # Open with PIL to get dimensions and convert if needed
+            pil_image = PILImage.open(io.BytesIO(image_data))
+
+            # Convert RGBA to RGB if necessary
+            if pil_image.mode in ('RGBA', 'P'):
+                rgb_image = PILImage.new('RGB', pil_image.size, (255, 255, 255))
+                if pil_image.mode == 'P':
+                    pil_image = pil_image.convert('RGBA')
+                if pil_image.mode == 'RGBA':
+                    rgb_image.paste(pil_image, mask=pil_image.split()[3])
+                else:
+                    rgb_image.paste(pil_image)
+                pil_image = rgb_image
+
+            # Save to BytesIO
+            img_io = io.BytesIO()
+            pil_image.save(img_io, format='JPEG', quality=85)
+            img_io.seek(0)
+
+            # Create reportlab Image
+            img = Image(img_io)
+
+            # Calculate aspect ratio and resize if needed
+            aspect = pil_image.height / pil_image.width
+            if img.drawWidth > max_width:
+                img.drawWidth = max_width
+                img.drawHeight = max_width * aspect
+
+            return img
+        except Exception as e:
+            print(f"Error converting base64 to image: {str(e)}")
+            return None
 
     def format_dasha(self, form_data, prefix):
         """Format dasha data from form fields
@@ -251,6 +295,27 @@ class ReportGenerator:
             ('vastuRemedies', 'Remedies')
         ])
 
+
+        # Add house map images and room directions if present
+        house_map_images = form_data.get('houseMapImages', [])
+        house_map_analyses = form_data.get('houseMapAnalyses', [])
+
+        if house_map_images and isinstance(house_map_images, list):
+            for idx, img_base64 in enumerate(house_map_images):
+                img = self.base64_to_image(img_base64)
+                if img:
+                    story.append(img)
+                    story.append(Spacer(1, 0.1*inch))
+
+                    # Add room directions for this map if available
+                    if idx < len(house_map_analyses) and house_map_analyses[idx]:
+                        story.append(Paragraph(f"<b>Room Directions (Map {idx + 1}):</b>", field_label_style))
+                        # Split room directions into individual lines and create separate paragraphs
+                        room_lines = house_map_analyses[idx].split('\n')
+                        for room_line in room_lines:
+                            if room_line.strip():
+                                story.append(Paragraph(room_line, field_value_style))
+                        story.append(Spacer(1, 0.15*inch))
         # ASTROLOGY (Custom handling for Dashas)
         # Check if ASTROLOGY section has any content
         mahadasha = self.format_dasha(form_data, 'mahadasha')
