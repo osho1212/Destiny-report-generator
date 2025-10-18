@@ -813,9 +813,12 @@ function ReportForm({ darkTheme }) {
   // House Map state - array to support multiple maps with analysis
   const [houseMaps, setHouseMaps] = useState([]);
 
-  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
-  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
-  const isMobile = viewportWidth <= 768;
+  const initialViewport = {
+    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768
+  };
+  const [viewport, setViewport] = useState(initialViewport);
+  const isMobile = viewport.width <= 768;
 
   const getViewerWidth = () => {
     if (typeof window === 'undefined') {
@@ -830,15 +833,32 @@ function ReportForm({ darkTheme }) {
     }
     return Math.min(kundliSize.height, window.innerHeight - 32);
   };
+  React.useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const handleResize = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
   useEffect(() => {
-    const maxX = Math.max(0, viewportWidth - getViewerWidth());
-    const maxY = Math.max(0, viewportHeight - getViewerHeight());
+    const maxX = Math.max(0, viewport.width - getViewerWidth());
+    const maxY = Math.max(0, viewport.height - getViewerHeight());
     setKundliPosition((prev) => ({
       x: Math.min(Math.max(prev.x, 0), maxX),
       y: Math.min(Math.max(prev.y, 0), maxY)
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kundliSize.width, kundliSize.height, viewportWidth, viewportHeight]);
+  }, [kundliSize.width, kundliSize.height, viewport.width, viewport.height]);
 
   // Modal state for viewing maps
   const [viewingMap, setViewingMap] = useState(null);
@@ -2455,8 +2475,8 @@ function ReportForm({ darkTheme }) {
 
   const viewerWidth = getViewerWidth();
   const viewerHeight = getViewerHeight();
-  const clampedX = Math.min(Math.max(kundliPosition.x, 0), Math.max(0, viewportWidth - viewerWidth));
-  const clampedY = Math.min(Math.max(kundliPosition.y, 0), Math.max(0, viewportHeight - viewerHeight));
+  const clampedX = Math.min(Math.max(kundliPosition.x, 0), Math.max(0, viewport.width - viewerWidth));
+  const clampedY = Math.min(Math.max(kundliPosition.y, 0), Math.max(0, viewport.height - viewerHeight));
 
   const toggleKundliViewer = () => {
     if (showKundliViewer) {
