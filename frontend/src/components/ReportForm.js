@@ -9,20 +9,19 @@ let pdfjsLibPromise = null;
 
 const loadPdfJs = async () => {
   if (!pdfjsLibPromise) {
-    pdfjsLibPromise = Promise.all([
-      import('pdfjs-dist/build/pdf'),
-      import('pdfjs-dist/build/pdf.worker.entry')
-    ])
-      .then(([pdfjsLibModule, pdfWorkerModule]) => {
-        const pdfjsLib = pdfjsLibModule && pdfjsLibModule.default ? pdfjsLibModule.default : pdfjsLibModule;
-        const workerSrc =
-          pdfWorkerModule && pdfWorkerModule.default ? pdfWorkerModule.default : pdfWorkerModule;
-
-        if (!pdfjsLib || !workerSrc) {
-          throw new Error('Failed to load pdfjs modules');
+    pdfjsLibPromise = import('pdfjs-dist/build/pdf')
+      .then((pdfjsLibModule) => {
+        const pdfjsLib =
+          pdfjsLibModule && pdfjsLibModule.default ? pdfjsLibModule.default : pdfjsLibModule;
+        if (!pdfjsLib) {
+          throw new Error('Failed to load pdfjs library');
         }
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+        if (pdfjsLib.GlobalWorkerOptions) {
+          const version = pdfjsLib.version || '5.4.296';
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
+        }
+
         return pdfjsLib;
       })
       .catch((error) => {
@@ -775,12 +774,70 @@ function ReportForm({ darkTheme }) {
   const [kundliPdfImages, setKundliPdfImages] = useState([]); // For mobile image viewing
   const [showKundliViewer, setShowKundliViewer] = useState(false);
   const [kundliZoom, setKundliZoom] = useState(1);
+  const getCurrentViewport = () => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768
+  });
+
   // Responsive initial dimensions for Kundli viewer
   const getInitialKundliSize = () => {
-    const isMobile = window.innerWidth <= 768;
+    const { width, height } = getCurrentViewport();
+    const isMobile = width <= 768;
     if (isMobile) {
-      const width = Math.max(240, Math.min(window.innerWidth * 0.7, 340));
-      const height = Math.max(260, Math.min(window.innerHeight * 0.6, 420));
+      const calculatedWidth = Math.max(240, Math.min(width * 0.7, 340));
+      const calculatedHeight = Math.max(260, Math.min(height * 0.6, 420));
+      return { width: calculatedWidth, height: calculatedHeight };
+    }
+    return { width: 600, height: 700 };
+  };
+
+  const getInitialKundliPosition = (customSize) => {
+    const { width, height } = getCurrentViewport();
+    const isMobile = width <= 768;
+    if (isMobile) {
+      const viewerWidth = customSize ? customSize.width : Math.max(240, Math.min(width * 0.7, 340));
+      const viewerHeight = customSize ? customSize.height : Math.max(260, Math.min(height * 0.6, 420));
+      return {
+        x: Math.max(8, width - viewerWidth - 16),
+        y: Math.max(60, height * 0.1)
+      };
+    }
+    return { x: 100, y: 100 };
+  };
+
+  const [kundliSize, setKundliSize] = useState(getInitialKundliSize());
+  const [kundliPosition, setKundliPosition] = useState(getInitialKundliPosition(getInitialKundliSize()));
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+  // No Star checkbox states for dasha sections
+  const [mahadashaNoStar, setMahadashaNoStar] = useState(false);
+  const [antardashaNoStar, setAntardashaNoStar] = useState(false);
+  const [pratyantardashaNoStar, setPratyantardashaNoStar] = useState(false);
+
+  // House Map state - array to support multiple maps with analysis
+  const [houseMaps, setHouseMaps] = useState([]);
+
+  const initialViewport = getCurrentViewport();
+  const [viewport, setViewport] = useState(initialViewport);
+  const isMobile = viewport.width <= 768;
+
+  const getViewerWidth = () => {
+    if (typeof window === 'undefined') {
+      return kundliSize.width;
+    }
+    return Math.min(kundliSize.width, window.innerWidth - 16);
+  };
+
+  const getViewerHeight = () => {
+    if (typeof window === 'undefined') {
+      return kundliSize.height;
+    }
+    return Math.min(kundliSize.height, window.innerHeight - 32);
+  };
+*** End Patch
       return { width, height };
     }
     return { width: 600, height: 700 };
