@@ -2386,11 +2386,11 @@ function ReportForm({ darkTheme }) {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            touchAction: 'none',
+            touchAction: window.innerWidth <= 768 ? 'auto' : 'none',
             userSelect: 'none'
           }}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
+          onMouseDown={window.innerWidth > 768 ? handleMouseDown : undefined}
+          onTouchStart={window.innerWidth > 768 ? handleTouchStart : undefined}
         >
           {/* Header */}
           <div
@@ -2399,12 +2399,12 @@ function ReportForm({ darkTheme }) {
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
               color: 'white',
               padding: window.innerWidth <= 768 ? '16px' : '12px 16px',
-              cursor: 'move',
+              cursor: window.innerWidth > 768 ? 'move' : 'default',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               userSelect: 'none',
-              touchAction: 'none',
+              touchAction: window.innerWidth <= 768 ? 'auto' : 'none',
               minHeight: window.innerWidth <= 768 ? '50px' : 'auto'
             }}
           >
@@ -2467,7 +2467,9 @@ function ReportForm({ darkTheme }) {
               overflow: 'auto',
               padding: '10px',
               backgroundColor: '#f3f4f6',
-              position: 'relative'
+              position: 'relative',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain'
             }}
           >
             <iframe
@@ -2482,23 +2484,25 @@ function ReportForm({ darkTheme }) {
               title="Kundli PDF"
             />
 
-            {/* Resize Handle */}
-            <div
-              onMouseDown={handleResizeMouseDown}
-              onTouchStart={handleResizeTouchStart}
-              className="kundli-resize-handle"
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: window.innerWidth <= 768 ? '40px' : '20px',
-                height: window.innerWidth <= 768 ? '40px' : '20px',
-                cursor: 'nwse-resize',
-                background: 'linear-gradient(135deg, transparent 50%, #1e3a8a 50%)',
-                borderBottomRightRadius: '12px',
-                touchAction: 'none'
-              }}
-            />
+            {/* Resize Handle - Desktop only */}
+            {window.innerWidth > 768 && (
+              <div
+                onMouseDown={handleResizeMouseDown}
+                onTouchStart={handleResizeTouchStart}
+                className="kundli-resize-handle"
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  width: '20px',
+                  height: '20px',
+                  cursor: 'nwse-resize',
+                  background: 'linear-gradient(135deg, transparent 50%, #1e3a8a 50%)',
+                  borderBottomRightRadius: '12px',
+                  touchAction: 'none'
+                }}
+              />
+            )}
           </div>
         </div>
       )}
