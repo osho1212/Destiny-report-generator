@@ -820,8 +820,7 @@ function ReportForm({ darkTheme }) {
   // House Map state - array to support multiple maps with analysis
   const [houseMaps, setHouseMaps] = useState([]);
 
-  const initialViewport = getCurrentViewport();
-  const [viewport, setViewport] = useState(initialViewport);
+  const [viewport, setViewport] = useState(() => getCurrentViewport());
   const isMobile = viewport.width <= 768;
 
   const getViewerWidth = () => {
@@ -870,11 +869,7 @@ function ReportForm({ darkTheme }) {
   // House Map state - array to support multiple maps with analysis
   const [houseMaps, setHouseMaps] = useState([]);
 
-  const initialViewport = {
-    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
-    height: typeof window !== 'undefined' ? window.innerHeight : 768
-  };
-  const [viewport, setViewport] = useState(initialViewport);
+  const [viewport, setViewport] = useState(() => getCurrentViewport());
   const isMobile = viewport.width <= 768;
 
   const getViewerWidth = () => {
