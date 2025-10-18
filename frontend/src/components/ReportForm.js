@@ -714,8 +714,31 @@ function ReportForm({ darkTheme }) {
   const [kundliPdf, setKundliPdf] = useState(null);
   const [showKundliViewer, setShowKundliViewer] = useState(false);
   const [kundliZoom, setKundliZoom] = useState(1);
-  const [kundliPosition, setKundliPosition] = useState({ x: 100, y: 100 });
-  const [kundliSize, setKundliSize] = useState({ width: 600, height: 700 });
+  // Responsive initial dimensions for Kundli viewer
+  const getInitialKundliSize = () => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      return {
+        width: Math.min(window.innerWidth - 20, 400),
+        height: Math.min(window.innerHeight - 100, 500)
+      };
+    }
+    return { width: 600, height: 700 };
+  };
+
+  const getInitialKundliPosition = () => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      return {
+        x: 10,
+        y: 50
+      };
+    }
+    return { x: 100, y: 100 };
+  };
+
+  const [kundliPosition, setKundliPosition] = useState(getInitialKundliPosition());
+  const [kundliSize, setKundliSize] = useState(getInitialKundliSize());
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -1884,13 +1907,63 @@ function ReportForm({ darkTheme }) {
     });
   };
 
+  // Touch event handlers for mobile support
+  const handleTouchStart = (e) => {
+    if (e.target.classList.contains('kundli-header')) {
+      const touch = e.touches[0];
+      setIsDragging(true);
+      setDragStart({
+        x: touch.clientX - kundliPosition.x,
+        y: touch.clientY - kundliPosition.y
+      });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (isDragging || isResizing) {
+      const touch = e.touches[0];
+      if (isDragging) {
+        setKundliPosition({
+          x: touch.clientX - dragStart.x,
+          y: touch.clientY - dragStart.y
+        });
+      }
+      if (isResizing) {
+        const newWidth = Math.max(300, resizeStart.width + (touch.clientX - resizeStart.x));
+        const newHeight = Math.max(300, resizeStart.height + (touch.clientY - resizeStart.y));
+        setKundliSize({ width: newWidth, height: newHeight });
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
+
+  const handleResizeTouchStart = (e) => {
+    e.stopPropagation();
+    const touch = e.touches[0];
+    setIsResizing(true);
+    setResizeStart({
+      x: touch.clientX,
+      y: touch.clientY,
+      width: kundliSize.width,
+      height: kundliSize.height
+    });
+  };
+
   useEffect(() => {
     if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
       };
     }
   }, [isDragging, isResizing, dragStart, resizeStart]);
@@ -2341,6 +2414,7 @@ function ReportForm({ darkTheme }) {
             overflow: 'hidden'
           }}
           onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
         >
           {/* Header */}
           <div
@@ -2433,6 +2507,7 @@ function ReportForm({ darkTheme }) {
             {/* Resize Handle */}
             <div
               onMouseDown={handleResizeMouseDown}
+              onTouchStart={handleResizeTouchStart}
               style={{
                 position: 'absolute',
                 bottom: 0,
@@ -3873,6 +3948,7 @@ function ReportForm({ darkTheme }) {
                         <label style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '12px' }}>
                           <input
                             type="checkbox"
+                            className="nadi-checkbox"
                             checked={normalizedItem.hasBTag}
                             onChange={(e) => {
                               const newPlanets = [...saturnRelationPlanets].map((p, i) => {
@@ -4005,6 +4081,7 @@ function ReportForm({ darkTheme }) {
                         <label style={{ display: 'flex', alignItems: 'center', gap: '2px', fontSize: '12px' }}>
                           <input
                             type="checkbox"
+                            className="nadi-checkbox"
                             checked={normalizedItem.hasBTag}
                             onChange={(e) => {
                               const newPlanets = [...venusRelationPlanets].map((p, i) => {

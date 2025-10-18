@@ -563,6 +563,13 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
+/* Nadi Checkbox Styling */
+.nadi-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 /* Removal Items Styling */
 .removal-item-row {
   display: flex;
@@ -673,6 +680,15 @@
   .form-group select {
     font-size: 16px; /* Prevents zoom on iOS */
     padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Fix for date and time inputs on mobile */
+  .form-group input[type="date"],
+  .form-group input[type="time"] {
+    width: 100%;
+    max-width: 100%;
   }
 
   .dasha-group {
@@ -700,8 +716,19 @@
     flex-direction: column;
   }
 
+  .period-dates {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .period-field {
     width: 100%;
+  }
+
+  .period-field input[type="date"] {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
   }
 
   .aspect-row {
@@ -723,6 +750,29 @@
     width: 100%;
     border-radius: 6px;
     margin-top: 10px;
+  }
+
+  /* Larger touch targets for mobile */
+  .aspect-btn-mini {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .aspect-btn-tiny {
+    min-width: 40px;
+    min-height: 40px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .aspect-select-small {
+    min-height: 44px;
+    padding: 10px;
+    font-size: 16px;
   }
 
   .submit-btn {

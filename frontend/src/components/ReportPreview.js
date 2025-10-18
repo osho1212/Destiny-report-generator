@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ShinyText from './ShinyText';
 import './ReportPreview.css';
 
 function ReportPreview({ formData, onClose, onExport }) {
   const [filename, setFilename] = useState('Destiny_Report');
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
   // Helper function to format dasha data
   // Format: Planet(Source), NL(NL Source), (Additional house), SL(SL source)
   const formatDasha = (prefix) => {
