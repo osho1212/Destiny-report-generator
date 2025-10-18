@@ -38,11 +38,18 @@ app = Flask(__name__)
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
 allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
 
+# Add Vercel preview deployments support (will be configured via environment variable)
+# Format: ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app,https://*.vercel.app
 CORS(app, resources={
     r"/api/*": {
-        "origins": allowed_origins,
-        "methods": ["GET", "POST"],
-        "allow_headers": ["Content-Type"]
+        "origins": allowed_origins + [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://192.168.31.121:3000"  # Your local network IP
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+        "supports_credentials": False
     }
 })
 
@@ -753,5 +760,6 @@ if __name__ == '__main__':
     # Configure host/port/debug via environment for deployment
     debug_env = os.getenv("FLASK_DEBUG", "false").lower() in ("1", "true", "yes", "on")
     host = os.getenv("FLASK_HOST", "0.0.0.0")
-    port = int(os.getenv("FLASK_PORT", "5001"))
+    # Use PORT for Railway/Heroku compatibility, fallback to FLASK_PORT, then 5001
+    port = int(os.getenv("PORT", os.getenv("FLASK_PORT", "5001")))
     app.run(debug=debug_env, port=port, host=host)

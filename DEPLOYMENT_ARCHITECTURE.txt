@@ -1,0 +1,188 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                  DEPLOYMENT ARCHITECTURE                          ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────┐
+│                        SAME REPOSITORY                           │
+│               github.com/username/destiny-report                 │
+│                                                                   │
+│   ┌─────────────────┐              ┌──────────────────┐         │
+│   │   frontend/     │              │    backend/      │         │
+│   │   ├── src/      │              │    ├── app.py    │         │
+│   │   ├── public/   │              │    ├── utils/    │         │
+│   │   └── build/    │              │    └── venv/     │         │
+│   └─────────────────┘              └──────────────────┘         │
+└───────┬──────────────────────────────────────┬──────────────────┘
+        │                                       │
+        │                                       │
+        ▼                                       ▼
+┌───────────────────┐                 ┌──────────────────┐
+│    VERCEL         │                 │    RAILWAY       │
+│                   │                 │                  │
+│  Deploys only:    │                 │  Deploys only:   │
+│  frontend/        │                 │  backend/        │
+│                   │                 │                  │
+│  Build Command:   │                 │  Start Command:  │
+│  npm run build    │                 │  python app.py   │
+│                   │                 │                  │
+│  Output:          │                 │  Runs on:        │
+│  Static Files     │                 │  Port 5001       │
+│  (HTML/CSS/JS)    │                 │  (Flask Server)  │
+│                   │                 │                  │
+│  CDN: Global      │                 │  Region: Auto    │
+│  HTTPS: Auto      │                 │  HTTPS: Auto     │
+└─────────┬─────────┘                 └────────┬─────────┘
+          │                                    │
+          │                                    │
+          │  URL:                              │  URL:
+          │  your-app.vercel.app               │  your-app.up.railway.app
+          │                                    │
+          └──────────────┬─────────────────────┘
+                         │
+                         │ HTTPS API Calls
+                         │ /api/generate-report
+                         │ /api/health
+                         │
+                         ▼
+            ┌────────────────────────┐
+            │   USER DEVICES         │
+            │                        │
+            │  Desktop:              │
+            │  your-app.vercel.app   │
+            │                        │
+            │  Mobile (anywhere):    │
+            │  your-app.vercel.app   │
+            │                        │
+            │  ✓ Same WiFi           │
+            │  ✓ Different WiFi      │
+            │  ✓ Mobile Data         │
+            │  ✓ Anywhere in World   │
+            └────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════
+
+REQUEST FLOW:
+
+1. User visits: https://your-app.vercel.app
+   ↓
+2. Vercel serves static React app (HTML/CSS/JS)
+   ↓
+3. User fills form and clicks "Export"
+   ↓
+4. Frontend makes API call to:
+   https://your-app.up.railway.app/api/generate-report
+   ↓
+5. Railway backend processes request:
+   - Generates PDF
+   - Merges Kundli
+   - Adds images
+   ↓
+6. Backend sends PDF back to frontend
+   ↓
+7. Frontend triggers download on user's device
+
+═══════════════════════════════════════════════════════════════════
+
+CONFIGURATION:
+
+┌────────────────────────────────────────────────────────────────┐
+│ FRONTEND (Vercel)                                              │
+├────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ vercel.json:                                                   │
+│   buildCommand: "cd frontend && npm run build"                 │
+│   outputDirectory: "frontend/build"                            │
+│                                                                 │
+│ Environment Variables:                                         │
+│   REACT_APP_API_URL=https://your-app.up.railway.app/api       │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ BACKEND (Railway)                                              │
+├────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ railway.toml:                                                  │
+│   startCommand: "cd backend && python app.py"                  │
+│   buildCommand: "cd backend && pip install -r requirements.txt"│
+│                                                                 │
+│ Environment Variables:                                         │
+│   PORT=5001                                                    │
+│   ALLOWED_ORIGINS=https://your-app.vercel.app                  │
+│   FLASK_DEBUG=false                                            │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+ADVANTAGES:
+
+✓ SCALABILITY:
+  - Frontend: Auto-scales globally via CDN
+  - Backend: Can scale vertically on Railway
+
+✓ PERFORMANCE:
+  - Frontend: Served from nearest edge location
+  - Backend: Optimized for compute-heavy tasks
+
+✓ COST:
+  - Frontend: FREE (unlimited)
+  - Backend: FREE (500 hrs/month + $5 credit)
+
+✓ DEPLOYMENT:
+  - Both auto-deploy on git push
+  - Independent deployment cycles
+  - Easy rollback
+
+✓ SECURITY:
+  - Automatic HTTPS on both
+  - CORS configured
+  - Environment variables protected
+
+═══════════════════════════════════════════════════════════════════
+
+MONITORING:
+
+┌──────────────────────────────┐
+│ Vercel Dashboard             │
+│ vercel.com/dashboard         │
+│                              │
+│ View:                        │
+│ - Deployment status          │
+│ - Build logs                 │
+│ - Performance metrics        │
+│ - Error tracking             │
+└──────────────────────────────┘
+
+┌──────────────────────────────┐
+│ Railway Dashboard            │
+│ railway.app/dashboard        │
+│                              │
+│ View:                        │
+│ - Deployment status          │
+│ - Server logs                │
+│ - Resource usage             │
+│ - Environment variables      │
+└──────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+FREE TIER LIMITS:
+
+VERCEL:
+  ✓ Unlimited deployments
+  ✓ 100GB bandwidth/month
+  ✓ 100 build hours/month
+  ✗ No timeout limit for static sites
+
+RAILWAY:
+  ✓ 500 execution hours/month (~16 hours/day)
+  ✓ $5 free credit monthly
+  ✓ Unlimited deployments
+  ✗ Sleeps after 30 min inactivity (wakes in 1-2 sec)
+
+═══════════════════════════════════════════════════════════════════
+
+For detailed deployment instructions, see:
+docs/DEPLOYMENT_COMPLETE.md

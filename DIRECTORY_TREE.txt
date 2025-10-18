@@ -1,0 +1,83 @@
+Destiny Report Generator/
+│
+├── 📁 api/                              # Vercel Serverless Functions
+│   └── index.py                         # API entry point for Vercel
+│
+├── 📁 backend/                          # Python Flask Backend
+│   ├── 📁 generated_reports/            # Generated PDF outputs (gitignored)
+│   │   └── .gitkeep                     # Keeps directory in git
+│   ├── 📁 templates/                    # Jinja2 templates (if any)
+│   ├── 📁 utils/                        # Utility modules
+│   │   └── report_generator.py          # PDF generation logic
+│   ├── 📁 venv/                         # Python virtual environment (gitignored)
+│   ├── app.py                           # Main Flask application
+│   ├── requirements.txt                 # Python dependencies
+│   └── .gitignore                       # Backend-specific ignores
+│
+├── 📁 docs/                             # Project Documentation
+│   ├── INDEX.md                         # Documentation hub
+│   ├── QUICK_START.md                   # Setup & installation guide
+│   ├── PROJECT_STRUCTURE.md             # Codebase organization
+│   └── DEPLOYMENT.md                    # Deployment instructions
+│
+├── 📁 frontend/                         # React Frontend Application
+│   ├── 📁 node_modules/                 # NPM packages (gitignored)
+│   ├── 📁 public/                       # Static files
+│   │   └── index.html                   # HTML template
+│   ├── 📁 src/                          # React source code
+│   │   ├── 📁 components/               # React components
+│   │   │   ├── ReportForm.js            # Main form component
+│   │   │   ├── ReportForm.css           # Form styles
+│   │   │   ├── ReportPreview.js         # Preview modal
+│   │   │   ├── ReportPreview.css        # Preview styles
+│   │   │   ├── ShinyText.js             # Animated text component
+│   │   │   └── ShinyText.css            # Animation styles
+│   │   ├── 📁 services/                 # API layer
+│   │   │   └── apiService.js            # Backend communication
+│   │   ├── App.js                       # Main App component
+│   │   ├── App.css                      # App-level styles
+│   │   ├── index.js                     # React entry point
+│   │   └── index.css                    # Global styles
+│   ├── package.json                     # NPM dependencies
+│   ├── package-lock.json                # NPM lock file
+│   └── .gitignore                       # Frontend-specific ignores
+│
+├── 📄 .gitignore                        # Root gitignore
+├── 📄 .vercelignore                     # Vercel deployment ignores
+├── 📄 DIRECTORY_TREE.txt                # This file
+├── 📄 README.md                         # Main project README
+├── 📄 requirements.txt                  # Root Python deps (for Vercel)
+└── 📄 vercel.json                       # Vercel configuration
+
+═══════════════════════════════════════════════════════════════════
+
+KEY FILES:
+
+🎯 Entry Points:
+   • backend/app.py                      → Flask server
+   • frontend/src/index.js               → React app
+   • api/index.py                        → Vercel serverless
+
+📝 Configuration:
+   • vercel.json                         → Vercel deployment
+   • frontend/package.json               → NPM scripts & deps
+   • backend/requirements.txt            → Python packages
+
+🎨 Main Components:
+   • frontend/src/components/ReportForm.js       → Form UI
+   • frontend/src/components/ReportPreview.js    → Preview modal
+   • backend/utils/report_generator.py           → PDF generator
+
+═══════════════════════════════════════════════════════════════════
+
+IMPORTANT NOTES:
+
+✓ Mobile responsive with breakpoints at 768px and 576px
+✓ Dark/Light theme support
+✓ Touch-friendly (44px minimum touch targets)
+✓ PDF-only export (DOCX and Excel removed)
+✓ Kundli PDF integration (pages 1, 3, 4)
+✓ Image upload support for house maps
+✓ Real-time preview before export
+
+═══════════════════════════════════════════════════════════════════

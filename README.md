@@ -1,205 +1,240 @@
-# Destiny Report Generator
+# 📊 Destiny Report Generator
 
-A full-stack application for generating custom reports from form data. Built with React (frontend) and Python Flask (backend).
+> A powerful full-stack application for generating custom astrology and vastu reports with PDF export functionality.
 
-## Features
+[![React](https://img.shields.io/badge/React-18.2-61dafb?logo=react)](https://reactjs.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776ab?logo=python)](https://python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-- 📝 Dynamic form with validation
-- 📄 Multiple export formats (PDF, Word, Excel)
-- 🎨 Modern, responsive UI
-- ⚡ Fast report generation
-- 🔄 Real-time form validation
+---
 
-## Tech Stack
+## ✨ Features
 
-### Frontend
-- React 18
-- React Hook Form (form handling & validation)
-- Axios (HTTP client)
-- CSS3 (styling)
+- 📝 **Comprehensive Form** - Dynamic form with sections for client info, vastu analysis, and astrology
+- 🎨 **Live Preview** - Real-time preview before generating reports
+- 📄 **PDF Export** - Professional PDF reports with Kundli integration
+- 🌓 **Dark Mode** - Toggle between light and dark themes
+- 📱 **Mobile Responsive** - Fully optimized for mobile devices
+- 🖼️ **Image Upload** - Support for house maps and Kundli PDFs
+- ⚡ **Fast Generation** - Efficient report processing
+- 🎯 **Custom Aspects** - Configurable aspects on houses and planets
 
-### Backend
-- Python 3.8+
-- Flask (web framework)
-- python-docx (Word documents)
-- ReportLab (PDF generation)
-- openpyxl (Excel files)
-- Jinja2 (templating)
+---
 
-## Project Structure
-
-```
-Destiny Report Generator/
-├── backend/
-│   ├── app.py                      # Flask application entry point
-│   ├── requirements.txt            # Python dependencies
-│   ├── utils/
-│   │   └── report_generator.py    # Report generation logic
-│   ├── templates/                  # Custom templates (optional)
-│   └── generated_reports/          # Output directory for reports
-│
-└── frontend/
-    ├── public/
-    │   └── index.html
-    ├── src/
-    │   ├── components/
-    │   │   ├── ReportForm.js       # Main form component
-    │   │   └── ReportForm.css
-    │   ├── services/
-    │   │   └── apiService.js       # API communication
-    │   ├── App.js
-    │   ├── App.css
-    │   ├── index.js
-    │   └── index.css
-    └── package.json
-```
-
-## Installation & Setup
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v14 or higher)
+- Node.js (v14+)
 - Python 3.8+
 - pip
 
-### Backend Setup
+### Installation
 
-1. Navigate to backend directory:
+1. **Clone the repository**
+```bash
+git clone <your-repo-url>
+cd Destiny\ Report\ Generator
+```
+
+2. **Backend Setup**
 ```bash
 cd backend
-```
-
-2. Create virtual environment (recommended):
-```bash
 python -m venv venv
-
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
-```
-
-3. Install Python dependencies:
-```bash
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-4. Run the Flask server:
-```bash
 python app.py
 ```
 
-Backend will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Navigate to frontend directory:
+3. **Frontend Setup** (in a new terminal)
 ```bash
 cd frontend
-```
-
-2. Install Node dependencies:
-```bash
 npm install
-```
-
-3. Start the React development server:
-```bash
 npm start
 ```
 
-Frontend will run on `http://localhost:3000`
+4. **Access the application**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5001
+- Mobile Access: http://192.168.31.121:3000 (your local network IP)
 
-## Usage
+---
 
-1. Make sure both backend (Flask) and frontend (React) servers are running
-2. Open your browser and go to `http://localhost:3000`
-3. Fill in the form with your information
-4. Select desired report format (PDF, Word, or Excel)
-5. Click "Generate Report"
-6. The report will automatically download
+## 📁 Project Structure
 
-## API Endpoints
+See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for detailed structure.
 
-### Health Check
 ```
-GET /api/health
-```
-
-### Generate Report
-```
-POST /api/generate-report
-Body: {
-  "reportType": "pdf|docx|excel",
-  "formData": { ... }
-}
-```
-
-### Get Templates
-```
-GET /api/templates
+destiny-report-generator/
+├── 📁 api/                  # Vercel serverless handlers
+├── 📁 backend/              # Python Flask backend
+│   ├── utils/               # Report generation logic
+│   └── app.py               # Main Flask app
+├── 📁 frontend/             # React application
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   └── services/        # API layer
+│   └── public/
+├── 📁 docs/                 # Documentation
+└── 📄 vercel.json           # Deployment config
 ```
 
-## Customization
+---
 
-### Adding Custom Form Fields
-
-Edit [frontend/src/components/ReportForm.js](frontend/src/components/ReportForm.js) to add new fields.
-
-### Customizing Report Templates
-
-Modify the report generation logic in [backend/utils/report_generator.py](backend/utils/report_generator.py).
-
-### Styling
-
-- Main styles: [frontend/src/App.css](frontend/src/App.css)
-- Form styles: [frontend/src/components/ReportForm.css](frontend/src/components/ReportForm.css)
-- Global styles: [frontend/src/index.css](frontend/src/index.css)
-
-## Development
-
-### Backend Development
-- The Flask server runs in debug mode by default
-- Changes to Python files will auto-reload the server
-
-### Frontend Development
-- React hot reload is enabled
-- Changes will reflect immediately in the browser
-
-## Building for Production
+## 🛠️ Tech Stack
 
 ### Frontend
-```bash
-cd frontend
-npm run build
-```
-
-The optimized build will be in the `frontend/build` directory.
+- **React 18** - UI framework
+- **React Hook Form** - Form management
+- **Axios** - HTTP client
+- **PDF.js** - PDF processing
+- **Custom CSS** - Responsive styling
 
 ### Backend
-For production, use a WSGI server like Gunicorn:
+- **Python 3.8+** - Core language
+- **Flask** - Web framework
+- **ReportLab** - PDF generation
+- **PyPDF2** - PDF manipulation
+- **Pillow** - Image processing
+- **python-docx** - Word document generation
+
+---
+
+## 📖 Documentation
+
+- [📋 Project Structure](docs/PROJECT_STRUCTURE.md)
+- [🚀 Deployment Guide](docs/DEPLOYMENT.md)
+
+---
+
+## 🌐 Deployment
+
+### Ready to Deploy?
+
+Your project is configured for **separate deployment**:
+
+**Frontend → Vercel** (Global CDN, Free)
+**Backend → Railway** (Free tier with $5/month credit)
+
+### Quick Deploy Guide:
+
+1. **Check readiness:**
+   ```bash
+   ./deploy-check.sh
+   ```
+
+2. **Follow the complete guide:**
+   - [📘 Complete Deployment Guide](docs/DEPLOYMENT_COMPLETE.md) - Step-by-step instructions
+   - [📋 Deployment Summary](DEPLOYMENT_SUMMARY.md) - Quick overview
+
+### What You'll Get:
+- ✅ Globally accessible URL (not just local WiFi!)
+- ✅ Mobile-friendly from anywhere
+- ✅ Automatic HTTPS
+- ✅ Auto-deploy on git push
+- ✅ **100% Free hosting!**
+
+**Deployment time:** ~35 minutes
+**Result:** `https://your-app.vercel.app` 🎉
+
+---
+
+## 🎯 Usage
+
+1. **Fill the Form**
+   - Enter client information
+   - Upload Kundli PDF and house maps
+   - Configure vastu analysis
+   - Set astrology details (planets, houses, dashas)
+
+2. **Configure Aspects**
+   - Add aspects on houses
+   - Add aspects on planets
+   - Set removal and placement directions
+
+3. **Preview**
+   - Click "Preview & Generate Report"
+   - Review all information
+
+4. **Export**
+   - Click "Export Report"
+   - PDF will be downloaded automatically
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| POST | `/api/generate-report` | Generate PDF report |
+| POST | `/api/extract-pdf-data` | Extract Kundli text |
+| POST | `/api/convert-pdf-to-image` | Convert PDF to image |
+
+---
+
+## 🎨 Customization
+
+### Adding Form Fields
+Edit `frontend/src/components/ReportForm.js`
+
+### Modifying PDF Template
+Edit `backend/utils/report_generator.py`
+
+### Styling
+- App styles: `frontend/src/App.css`
+- Form styles: `frontend/src/components/ReportForm.css`
+- Preview styles: `frontend/src/components/ReportPreview.css`
+
+---
+
+## 🐛 Troubleshooting
+
+### Port Conflicts
 ```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+# Frontend
+PORT=3001 npm start
+
+# Backend (edit app.py)
+app.run(debug=True, port=5002)
 ```
 
-## Troubleshooting
+### CORS Issues
+Ensure Flask-CORS is properly configured in `backend/app.py`
 
-### Port already in use
-- Backend: Change port in [backend/app.py](backend/app.py)
-- Frontend: Change port with `PORT=3001 npm start`
+### Build Errors
+```bash
+# Clear caches
+cd frontend && rm -rf node_modules package-lock.json && npm install
+cd backend && rm -rf venv && python -m venv venv && pip install -r requirements.txt
+```
 
-### CORS errors
-- Ensure Flask-CORS is installed and configured in [backend/app.py](backend/app.py)
+---
 
-### Module not found
-- Backend: Make sure virtual environment is activated and dependencies are installed
-- Frontend: Run `npm install` again
+## 📝 License
 
-## License
+MIT License - see [LICENSE](LICENSE) file
 
-MIT
+---
 
-## Contributing
+## 🤝 Contributing
 
-Feel free to submit issues and enhancement requests!
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📧 Support
+
+For issues and questions, please open an issue on GitHub.
+
+---
+
+<div align="center">
+Made with ❤️ for astrology and vastu enthusiasts
+</div>
