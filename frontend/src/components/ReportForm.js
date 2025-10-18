@@ -712,6 +712,7 @@ function ReportForm({ darkTheme }) {
   const [saturnRelationPlanets, setSaturnRelationPlanets] = useState([{ planet: '', hasBTag: false }]);
   const [venusRelationPlanets, setVenusRelationPlanets] = useState([{ planet: '', hasBTag: false }]);
   const [kundliPdf, setKundliPdf] = useState(null);
+  const [kundliPdfImages, setKundliPdfImages] = useState([]); // For mobile image viewing
   const [showKundliViewer, setShowKundliViewer] = useState(false);
   const [kundliZoom, setKundliZoom] = useState(1);
   // Responsive initial dimensions for Kundli viewer
@@ -1826,12 +1827,43 @@ function ReportForm({ darkTheme }) {
       setShowKundliViewer(true);
       setKundliZoom(1);
 
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+
+      // Convert PDF to images for mobile viewing
+      if (window.innerWidth <= 768) {
+        try {
+          const convertFormData = new FormData();
+          convertFormData.append('file', file);
+
+          const convertResponse = await fetch(`${API_URL}/convert-pdf-to-image`, {
+            method: 'POST',
+            body: convertFormData
+          });
+
+          if (convertResponse.ok) {
+            const convertResult = await convertResponse.json();
+            if (convertResult.success && Array.isArray(convertResult.images)) {
+              setKundliPdfImages(convertResult.images);
+            } else {
+              setKundliPdfImages([]);
+            }
+          } else {
+            console.error('Failed to convert PDF to images:', await convertResponse.text());
+            setKundliPdfImages([]);
+          }
+        } catch (error) {
+          console.error('Error converting PDF to images:', error);
+          setKundliPdfImages([]);
+        }
+      } else {
+        setKundliPdfImages([]);
+      }
+
       // Extract text from PDF using backend API
       try {
         const formData = new FormData();
         formData.append('file', file);
 
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
         const response = await fetch(`${API_URL}/extract-pdf-data`, {
           method: 'POST',
           body: formData
@@ -2358,6 +2390,7 @@ function ReportForm({ darkTheme }) {
                 setKundliPdf(null);
                 setShowKundliViewer(false);
                 setKundliZoom(1);
+                setKundliPdfImages([]);
                 // Reset file input
                 const fileInput = document.getElementById('kundliUpload');
                 if (fileInput) fileInput.value = '';
@@ -2475,17 +2508,42 @@ function ReportForm({ darkTheme }) {
               overscrollBehavior: 'contain'
             }}
           >
-            <iframe
-              src={kundliPdf}
-              style={{
-                width: isMobile ? '100%' : `${100 / kundliZoom}%`,
-                height: isMobile ? '100%' : `${100 / kundliZoom}%`,
-                transform: isMobile ? 'none' : `scale(${kundliZoom})`,
-                transformOrigin: 'top left',
-                border: 'none'
-              }}
-              title="Kundli PDF"
-            />
+            {isMobile && kundliPdfImages.length > 0 ? (
+              // Mobile: Display PDF pages as images for better scrolling
+              <div style={{ padding: '10px' }}>
+                {kundliPdfImages.map((imageUrl, index) => (
+                  <div key={index} style={{ marginBottom: '10px' }}>
+                    <img
+                      src={imageUrl}
+                      alt={`Kundli Page ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '4px'
+                      }}
+                    />
+                    <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '12px', marginTop: '5px' }}>
+                      Page {index + 1} of {kundliPdfImages.length}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Desktop: Use iframe
+              <iframe
+                src={kundliPdf}
+                style={{
+                  width: `${100 / kundliZoom}%`,
+                  height: `${100 / kundliZoom}%`,
+                  transform: `scale(${kundliZoom})`,
+                  transformOrigin: 'top left',
+                  border: 'none'
+                }}
+                title="Kundli PDF"
+              />
+            )}
 
             {/* Resize Handle - Desktop only */}
             {!isMobile && (
