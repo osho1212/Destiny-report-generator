@@ -1806,7 +1806,8 @@ function ReportForm({ darkTheme }) {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch('http://localhost:5001/api/extract-pdf-data', {
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+        const response = await fetch(`${API_URL}/extract-pdf-data`, {
           method: 'POST',
           body: formData
         });
@@ -1937,7 +1938,8 @@ function ReportForm({ darkTheme }) {
           const formData = new FormData();
           formData.append('file', file);
 
-          const response = await fetch('http://localhost:5001/api/convert-pdf-to-image', {
+          const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+          const response = await fetch(`${API_URL}/convert-pdf-to-image`, {
             method: 'POST',
             body: formData
           });
