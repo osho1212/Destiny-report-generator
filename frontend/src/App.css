@@ -78,13 +78,19 @@ body.dark-theme {
 }
 
 .App.dark-theme .hero-container {
-  background: linear-gradient(135deg, #ff8c00 0%, #ff6600 40%, #4169e1 100%);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(135deg, rgba(30, 43, 98, 0.95) 0%, rgba(40, 52, 120, 0.92) 45%, rgba(18, 26, 66, 0.9) 100%);
+  box-shadow: 0 18px 48px rgba(5, 10, 32, 0.7);
+  border: 1px solid rgba(96, 165, 250, 0.25);
 }
 
 .App.dark-theme .App-main {
   background: #0f3460;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.App.dark-theme .hero-title,
+.App.dark-theme .hero-subtitle {
+  text-shadow: none;
 }
 
 .App.dark-theme .theme-toggle {

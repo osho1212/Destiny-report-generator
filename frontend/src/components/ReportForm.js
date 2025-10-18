@@ -2329,16 +2329,7 @@ function ReportForm({ darkTheme }) {
       <div style={{ marginBottom: '20px', textAlign: 'center' }}>
         <label
           htmlFor="kundliUpload"
-          style={{
-            display: 'inline-block',
-            padding: '10px 20px',
-            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
-            color: 'white',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '14px'
-          }}
+          className="liquid-blue-btn"
         >
           📄 Upload Kundli PDF
         </label>
@@ -2354,17 +2345,8 @@ function ReportForm({ darkTheme }) {
             <button
               type="button"
               onClick={() => setShowKundliViewer(true)}
-              style={{
-                marginLeft: '10px',
-                padding: '10px 20px',
-                background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '14px'
-              }}
+              className="liquid-blue-btn"
+              style={{ marginLeft: '10px' }}
             >
               👁️ View Kundli
             </button>
@@ -2378,17 +2360,8 @@ function ReportForm({ darkTheme }) {
                 const fileInput = document.getElementById('kundliUpload');
                 if (fileInput) fileInput.value = '';
               }}
-              style={{
-                marginLeft: '10px',
-                padding: '10px 20px',
-                background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '14px'
-              }}
+              className="liquid-blue-btn liquid-blue-btn--danger"
+              style={{ marginLeft: '10px' }}
               title="Remove Kundli"
             >
               🗑️ Remove
@@ -2597,17 +2570,7 @@ function ReportForm({ darkTheme }) {
               />
               <label
                 htmlFor="mapUpload"
-                style={{
-                  padding: '8px 16px',
-                  background: 'linear-gradient(135deg, #4169e1 0%, #1e3a8a 100%)',
-                  color: 'white',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  border: 'none',
-                  display: 'inline-block'
-                }}
+                className="liquid-blue-btn"
               >
                 📁 Upload House Map{houseMaps.length > 0 ? 's' : ''} ({houseMaps.length})
               </label>
@@ -2615,16 +2578,7 @@ function ReportForm({ darkTheme }) {
                 <button
                   type="button"
                   onClick={() => setHouseMaps([])}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                    color: 'white',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    border: 'none'
-                  }}
+                  className="liquid-blue-btn"
                 >
                   🗑️ Remove All
                 </button>
@@ -3247,7 +3201,7 @@ function ReportForm({ darkTheme }) {
             <button
               type="button"
               onClick={() => setShowAspectsModal(true)}
-              className="aspects-modal-btn"
+              className="liquid-blue-btn"
             >
               Aspects
             </button>
@@ -4199,11 +4153,11 @@ function ReportForm({ darkTheme }) {
           </div>
         )}
 
-        <button type="submit" disabled={loading} className="submit-btn">
+        <button type="submit" disabled={loading} className="submit-btn liquid-blue-btn">
           {loading ? (
             'Generating Destiny Report...'
           ) : (
-            <ShinyText text="Preview & Generate Report" disabled={false} speed={3} />
+            <ShinyText text="Preview and Generate Report" disabled={false} speed={3} />
           )}
         </button>
       </form>
