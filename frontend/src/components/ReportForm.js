@@ -12,13 +12,23 @@ const loadPdfJs = async () => {
     pdfjsLibPromise = Promise.all([
       import('pdfjs-dist/build/pdf'),
       import('pdfjs-dist/build/pdf.worker.entry')
-    ]).then(([pdfjsLib, pdfjsWorker]) => {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-      return pdfjsLib;
-    }).catch(error => {
-      console.error('Failed to load pdfjs library:', error);
-      return null;
-    });
+    ])
+      .then(([pdfjsLibModule, pdfWorkerModule]) => {
+        const pdfjsLib = pdfjsLibModule && pdfjsLibModule.default ? pdfjsLibModule.default : pdfjsLibModule;
+        const workerSrc =
+          pdfWorkerModule && pdfWorkerModule.default ? pdfWorkerModule.default : pdfWorkerModule;
+
+        if (!pdfjsLib || !workerSrc) {
+          throw new Error('Failed to load pdfjs modules');
+        }
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+        return pdfjsLib;
+      })
+      .catch((error) => {
+        console.error('Failed to load pdfjs library:', error);
+        return null;
+      });
   }
   return pdfjsLibPromise;
 };
@@ -769,28 +779,27 @@ function ReportForm({ darkTheme }) {
   const getInitialKundliSize = () => {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      return {
-        width: Math.min(window.innerWidth - 20, 400),
-        height: Math.min(window.innerHeight - 100, 500)
-      };
+      const width = Math.max(240, Math.min(window.innerWidth * 0.7, 340));
+      const height = Math.max(260, Math.min(window.innerHeight * 0.6, 420));
+      return { width, height };
     }
     return { width: 600, height: 700 };
   };
 
-  const getInitialKundliPosition = () => {
+  const getInitialKundliPosition = (customSize) => {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      const width = Math.min(window.innerWidth - 20, 400);
+      const width = customSize ? customSize.width : Math.max(240, Math.min(window.innerWidth * 0.7, 340));
       return {
-        x: Math.max(8, (window.innerWidth - width) / 2),
-        y: 60
+        x: Math.max(8, window.innerWidth - width - 16),
+        y: Math.max(60, window.innerHeight * 0.1)
       };
     }
     return { x: 100, y: 100 };
   };
 
-  const [kundliPosition, setKundliPosition] = useState(getInitialKundliPosition());
   const [kundliSize, setKundliSize] = useState(getInitialKundliSize());
+  const [kundliPosition, setKundliPosition] = useState(getInitialKundliPosition(getInitialKundliSize()));
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -821,6 +830,15 @@ function ReportForm({ darkTheme }) {
     }
     return Math.min(kundliSize.height, window.innerHeight - 32);
   };
+  useEffect(() => {
+    const maxX = Math.max(0, viewportWidth - getViewerWidth());
+    const maxY = Math.max(0, viewportHeight - getViewerHeight());
+    setKundliPosition((prev) => ({
+      x: Math.min(Math.max(prev.x, 0), maxX),
+      y: Math.min(Math.max(prev.y, 0), maxY)
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kundliSize.width, kundliSize.height, viewportWidth, viewportHeight]);
 
   // Modal state for viewing maps
   const [viewingMap, setViewingMap] = useState(null);
@@ -1898,8 +1916,33 @@ function ReportForm({ darkTheme }) {
 
       // Convert PDF to images for mobile viewing (client-side for smoother UX)
       if (window.innerWidth <= 768) {
-        const images = await renderPdfToImages(file);
-        setKundliPdfImages(images);
+        let images = await renderPdfToImages(file);
+
+        // Fallback to backend conversion if client-side conversion fails
+        if (!images || images.length === 0) {
+          try {
+            const convertFormData = new FormData();
+            convertFormData.append('file', file);
+
+            const convertResponse = await fetch(`${API_URL}/convert-pdf-to-image`, {
+              method: 'POST',
+              body: convertFormData
+            });
+
+            if (convertResponse.ok) {
+              const convertResult = await convertResponse.json();
+              if (convertResult.success && Array.isArray(convertResult.images)) {
+                images = convertResult.images;
+              }
+            } else {
+              console.error('Fallback conversion failed:', await convertResponse.text());
+            }
+          } catch (fallbackError) {
+            console.error('Error in fallback PDF conversion:', fallbackError);
+          }
+        }
+
+        setKundliPdfImages(images || []);
       } else {
         setKundliPdfImages([]);
       }
