@@ -836,7 +836,7 @@ function ReportForm({ darkTheme }) {
     }
     return Math.min(kundliSize.height, window.innerHeight - 32);
   };
-*** End Patch
+
       return { width, height };
     }
     return { width: 600, height: 700 };
