@@ -837,54 +837,6 @@ function ReportForm({ darkTheme }) {
     return Math.min(kundliSize.height, window.innerHeight - 32);
   };
 
-      return { width, height };
-    }
-    return { width: 600, height: 700 };
-  };
-
-  const getInitialKundliPosition = (customSize) => {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      const width = customSize ? customSize.width : Math.max(240, Math.min(window.innerWidth * 0.7, 340));
-      return {
-        x: Math.max(8, window.innerWidth - width - 16),
-        y: Math.max(60, window.innerHeight * 0.1)
-      };
-    }
-    return { x: 100, y: 100 };
-  };
-
-  const [kundliSize, setKundliSize] = useState(getInitialKundliSize());
-  const [kundliPosition, setKundliPosition] = useState(getInitialKundliPosition(getInitialKundliSize()));
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
-
-  // No Star checkbox states for dasha sections
-  const [mahadashaNoStar, setMahadashaNoStar] = useState(false);
-  const [antardashaNoStar, setAntardashaNoStar] = useState(false);
-  const [pratyantardashaNoStar, setPratyantardashaNoStar] = useState(false);
-
-  // House Map state - array to support multiple maps with analysis
-  const [houseMaps, setHouseMaps] = useState([]);
-
-  const [viewport, setViewport] = useState(() => getCurrentViewport());
-  const isMobile = viewport.width <= 768;
-
-  const getViewerWidth = () => {
-    if (typeof window === 'undefined') {
-      return kundliSize.width;
-    }
-    return Math.min(kundliSize.width, window.innerWidth - 16);
-  };
-
-  const getViewerHeight = () => {
-    if (typeof window === 'undefined') {
-      return kundliSize.height;
-    }
-    return Math.min(kundliSize.height, window.innerHeight - 32);
-  };
   React.useEffect(() => {
     if (typeof window === 'undefined') {
       return undefined;
